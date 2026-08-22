@@ -268,6 +268,7 @@ Panel {
             elide: Text.ElideRight
             Layout.fillWidth: true
           }
+        }
 
         // Open config file in text editor
         BorderSurface {
@@ -839,6 +840,7 @@ Panel {
                 font.bold: true
                 Layout.alignment: Qt.AlignVCenter
               }
+            }
 
             MouseArea {
               id: testArea
