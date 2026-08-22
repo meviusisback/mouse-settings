@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "meviusisback.mouse-settings",
+  "name": "Mouse & Pointer",
+  "version": "1.0.0",
+  "author": "meviusisback",
+  "license": "MIT",
+  "description": "Graphical mouse & pointer configuration tool for Omarchy: cursor speed, precision/flat acceleration, natural scroll, left-handed mode, and shortcuts.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Mouse & Pointer",
+    "description": "Graphical mouse, cursor and pointer settings.",
+    "category": "Hardware",
+    "allowMultiple": false,
+    "defaults": {
+      "showDeviceName": true
+    }
+  }
+}
