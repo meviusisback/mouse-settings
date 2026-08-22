@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 Omarchy Mouse Settings Backend Controller (mouse_ctl.py)
-Manages live Hyprland mouse/pointer options and persistent storage in ~/.config/hypr/input.lua.
+Manages live Hyprland mouse/pointer options, button bindings, and persistent storage in:
+- ~/.config/hypr/input.lua (Sensitivity, acceleration, scroll, focus)
+- ~/.config/hypr/bindings.lua (Mouse button remaps and shortcuts)
 """
 
 import argparse
@@ -13,8 +15,22 @@ import sys
 from pathlib import Path
 
 INPUT_LUA_PATH = Path.home() / ".config" / "hypr" / "input.lua"
+BINDINGS_LUA_PATH = Path.home() / ".config" / "hypr" / "bindings.lua"
+
 START_MARKER = "-- [[ OMARCHY_MOUSE_SETTINGS_START ]]"
 END_MARKER = "-- [[ OMARCHY_MOUSE_SETTINGS_END ]]"
+
+BINDINGS_START_MARKER = "-- [[ OMARCHY_MOUSE_BINDINGS_START ]]"
+BINDINGS_END_MARKER = "-- [[ OMARCHY_MOUSE_BINDINGS_END ]]"
+
+DEFAULT_BUTTON_MAPPINGS = {
+    "side_back": "default",         # default (browser back), prev_workspace, menu, prev_window
+    "side_forward": "default",      # default (browser forward), next_workspace, terminal, next_window
+    "middle_click": "default",      # default (paste/tab), close_window, toggle_floating, toggle_fullscreen
+    "super_left": "move_window",    # move_window, disabled
+    "super_right": "resize_window", # resize_window, disabled
+    "super_wheel": "workspace_scroll" # workspace_scroll, disabled
+}
 
 def run_cmd(cmd):
     """Run a shell command and return stdout string."""
@@ -54,7 +70,6 @@ def get_devices():
     try:
         data = json.loads(out)
         mice = data.get("mice", [])
-        # Filter out virtual devices if desired, or return all mice
         clean_mice = []
         for m in mice:
             name = m.get("name", "Unknown Mouse")
@@ -68,8 +83,51 @@ def get_devices():
     except Exception:
         return []
 
+def read_saved_button_mappings():
+    """Read saved button mappings from ~/.config/hypr/bindings.lua."""
+    mappings = dict(DEFAULT_BUTTON_MAPPINGS)
+    if not BINDINGS_LUA_PATH.exists():
+        return mappings
+
+    try:
+        content = BINDINGS_LUA_PATH.read_text(encoding="utf-8")
+        if BINDINGS_START_MARKER in content and BINDINGS_END_MARKER in content:
+            block = content.split(BINDINGS_START_MARKER)[1].split(BINDINGS_END_MARKER)[0]
+            # Match metadata comments or bindings
+            if 'o.bind("mouse:275", "Previous workspace"' in block:
+                mappings["side_back"] = "prev_workspace"
+            elif 'o.bind("mouse:275", "Omarchy menu"' in block:
+                mappings["side_back"] = "menu"
+            elif 'o.bind("mouse:275", "Previous window"' in block:
+                mappings["side_back"] = "prev_window"
+
+            if 'o.bind("mouse:276", "Next workspace"' in block:
+                mappings["side_forward"] = "next_workspace"
+            elif 'o.bind("mouse:276", "Terminal"' in block:
+                mappings["side_forward"] = "terminal"
+            elif 'o.bind("mouse:276", "Next window"' in block:
+                mappings["side_forward"] = "next_window"
+
+            if 'o.bind("mouse:274", "Close active window"' in block:
+                mappings["middle_click"] = "close_window"
+            elif 'o.bind("mouse:274", "Toggle floating"' in block:
+                mappings["middle_click"] = "toggle_floating"
+            elif 'o.bind("mouse:274", "Toggle fullscreen"' in block:
+                mappings["middle_click"] = "toggle_fullscreen"
+
+            if 'hl.unbind("SUPER + mouse:272")' in block:
+                mappings["super_left"] = "disabled"
+            if 'hl.unbind("SUPER + mouse:273")' in block:
+                mappings["super_right"] = "disabled"
+            if 'hl.unbind("SUPER + mouse_down")' in block:
+                mappings["super_wheel"] = "disabled"
+    except Exception:
+        pass
+
+    return mappings
+
 def get_current_status():
-    """Get full state of mouse configuration."""
+    """Get full state of mouse configuration and button mappings."""
     sensitivity = get_hypr_option("input:sensitivity")
     if sensitivity is None:
         sensitivity = 0.0
@@ -99,6 +157,7 @@ def get_current_status():
         mouse_refocus = True
 
     devices = get_devices()
+    button_mappings = read_saved_button_mappings()
 
     return {
         "devices": devices,
@@ -111,6 +170,7 @@ def get_current_status():
         "left_handed": bool(left_handed),
         "scroll_factor": round(float(scroll_factor), 2),
         "mouse_refocus": bool(mouse_refocus),
+        "button_mappings": button_mappings
     }
 
 def apply_hypr_eval(settings):
@@ -179,8 +239,82 @@ def persist_to_input_lua(settings):
         updated_content = original_content.rstrip() + "\n\n" + new_block + "\n"
 
     INPUT_LUA_PATH.write_text(updated_content, encoding="utf-8")
+    return ""
 
-    # Validate with hyprctl reload & configerrors
+def persist_to_bindings_lua(mappings):
+    """Safely update button mappings in ~/.config/hypr/bindings.lua."""
+    BINDINGS_LUA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if not BINDINGS_LUA_PATH.exists():
+        original_content = "-- User keybinding overrides\n"
+    else:
+        original_content = BINDINGS_LUA_PATH.read_text(encoding="utf-8")
+
+    lines = []
+    lines.append(BINDINGS_START_MARKER)
+
+    # Side Back (275)
+    sb = mappings.get("side_back", "default")
+    if sb == "prev_workspace":
+        lines.append('hl.unbind("mouse:275")')
+        lines.append('o.bind("mouse:275", "Previous workspace", hl.dsp.focus({ workspace = "e-1" }), { mouse = true })')
+    elif sb == "menu":
+        lines.append('hl.unbind("mouse:275")')
+        lines.append('o.bind("mouse:275", "Omarchy menu", "omarchy-menu toggle root", { mouse = true })')
+    elif sb == "prev_window":
+        lines.append('hl.unbind("mouse:275")')
+        lines.append('o.bind("mouse:275", "Previous window", hl.dsp.focus({ direction = "l" }), { mouse = true })')
+
+    # Side Forward (276)
+    sf = mappings.get("side_forward", "default")
+    if sf == "next_workspace":
+        lines.append('hl.unbind("mouse:276")')
+        lines.append('o.bind("mouse:276", "Next workspace", hl.dsp.focus({ workspace = "e+1" }), { mouse = true })')
+    elif sf == "terminal":
+        lines.append('hl.unbind("mouse:276")')
+        lines.append('o.bind("mouse:276", "Terminal", { launch = "ghostty" }, { mouse = true })')
+    elif sf == "next_window":
+        lines.append('hl.unbind("mouse:276")')
+        lines.append('o.bind("mouse:276", "Next window", hl.dsp.focus({ direction = "r" }), { mouse = true })')
+
+    # Middle Click (274)
+    mc = mappings.get("middle_click", "default")
+    if mc == "close_window":
+        lines.append('hl.unbind("mouse:274")')
+        lines.append('o.bind("mouse:274", "Close active window", hl.dsp.window.kill(), { mouse = true })')
+    elif mc == "toggle_floating":
+        lines.append('hl.unbind("mouse:274")')
+        lines.append('o.bind("mouse:274", "Toggle floating", hl.dsp.window.toggle_floating(), { mouse = true })')
+    elif mc == "toggle_fullscreen":
+        lines.append('hl.unbind("mouse:274")')
+        lines.append('o.bind("mouse:274", "Toggle fullscreen", hl.dsp.window.fullscreen(), { mouse = true })')
+
+    # Super + Left Drag (272)
+    sl = mappings.get("super_left", "move_window")
+    if sl == "disabled":
+        lines.append('hl.unbind("SUPER + mouse:272")')
+
+    # Super + Right Drag (273)
+    sr = mappings.get("super_right", "resize_window")
+    if sr == "disabled":
+        lines.append('hl.unbind("SUPER + mouse:273")')
+
+    # Super + Wheel
+    sw = mappings.get("super_wheel", "workspace_scroll")
+    if sw == "disabled":
+        lines.append('hl.unbind("SUPER + mouse_down")')
+        lines.append('hl.unbind("SUPER + mouse_up")')
+
+    lines.append(BINDINGS_END_MARKER)
+
+    new_block = "\n".join(lines)
+
+    if BINDINGS_START_MARKER in original_content and BINDINGS_END_MARKER in original_content:
+        pattern = re.compile(re.escape(BINDINGS_START_MARKER) + r".*?" + re.escape(BINDINGS_END_MARKER), re.DOTALL)
+        updated_content = pattern.sub(new_block, original_content)
+    else:
+        updated_content = original_content.rstrip() + "\n\n" + new_block + "\n"
+
+    BINDINGS_LUA_PATH.write_text(updated_content, encoding="utf-8")
     run_cmd(["hyprctl", "reload"])
     _, err_out, _ = run_cmd(["hyprctl", "configerrors"])
     return err_out
@@ -199,13 +333,6 @@ def main():
     # apply
     apply_parser = subparsers.add_parser("apply", help="Apply and persist settings")
     apply_parser.add_argument("--json-data", type=str, help="JSON string with settings")
-    apply_parser.add_argument("--sensitivity", type=float)
-    apply_parser.add_argument("--accel-profile", type=str)
-    apply_parser.add_argument("--follow-mouse", type=int)
-    apply_parser.add_argument("--natural-scroll", type=str)
-    apply_parser.add_argument("--left-handed", type=str)
-    apply_parser.add_argument("--scroll-factor", type=float)
-    apply_parser.add_argument("--mouse-refocus", type=str)
 
     # quick toggle accel
     subparsers.add_parser("toggle-accel", help="Toggle precision (flat) vs desktop (adaptive) acceleration")
@@ -258,6 +385,7 @@ def main():
         }
         apply_hypr_eval(defaults)
         persist_to_input_lua(defaults)
+        persist_to_bindings_lua(DEFAULT_BUTTON_MAPPINGS)
         notify_user("Mouse Settings", "Reset to Omarchy defaults")
         print(json.dumps({"success": True, "status": get_current_status()}))
         return
@@ -268,27 +396,15 @@ def main():
             try:
                 payload = json.loads(args.json_data)
                 current.update(payload)
+                if "button_mappings" in payload:
+                    current["button_mappings"] = payload["button_mappings"]
             except Exception as e:
                 print(json.dumps({"error": f"Invalid JSON: {e}"}))
                 sys.exit(1)
-        else:
-            if args.sensitivity is not None:
-                current["sensitivity"] = args.sensitivity
-            if args.accel_profile is not None:
-                current["accel_profile"] = args.accel_profile
-            if args.follow_mouse is not None:
-                current["follow_mouse"] = args.follow_mouse
-            if args.natural_scroll is not None:
-                current["natural_scroll"] = args.natural_scroll.lower() in ("true", "1", "yes")
-            if args.left_handed is not None:
-                current["left_handed"] = args.left_handed.lower() in ("true", "1", "yes")
-            if args.scroll_factor is not None:
-                current["scroll_factor"] = args.scroll_factor
-            if args.mouse_refocus is not None:
-                current["mouse_refocus"] = args.mouse_refocus.lower() in ("true", "1", "yes")
 
         apply_hypr_eval(current)
-        err = persist_to_input_lua(current)
+        persist_to_input_lua(current)
+        err = persist_to_bindings_lua(current.get("button_mappings", {}))
         print(json.dumps({"success": True, "error": err, "status": get_current_status()}))
         return
 

@@ -32,10 +32,18 @@ Panel {
     natural_scroll: false,
     left_handed: false,
     scroll_factor: 1.0,
-    mouse_refocus: true
+    mouse_refocus: true,
+    button_mappings: {
+      side_back: "default",
+      side_forward: "default",
+      middle_click: "default",
+      super_left: "move_window",
+      super_right: "resize_window",
+      super_wheel: "workspace_scroll"
+    }
   })
 
-  property string activeTab: "motion" // "motion" | "scrolling" | "shortcuts"
+  property string activeTab: "motion" // "motion" | "scrolling" | "buttons"
   property bool isSaving: false
   property string lastActionNote: ""
 
@@ -45,6 +53,15 @@ Panel {
 
   function fetchStatus() {
     if (!statusProc.running) statusProc.running = true
+  }
+
+  function updateButtonMapping(key, nextVal) {
+    var mappings = {}
+    if (root.status && root.status.button_mappings) {
+      for (var k in root.status.button_mappings) mappings[k] = root.status.button_mappings[k]
+    }
+    mappings[key] = nextVal
+    root.applySettings({ button_mappings: mappings })
   }
 
   function applySettings(newValues) {
@@ -185,8 +202,8 @@ Panel {
     bar: root.bar
     owner: root
     open: root.opened
-    contentWidth: Style.space(350)
-    contentHeight: Style.space(480)
+    contentWidth: Style.space(360)
+    contentHeight: Style.space(540)
 
     ColumnLayout {
       anchors.fill: parent
@@ -208,7 +225,7 @@ Panel {
         ColumnLayout {
           Layout.fillWidth: true
           Layout.alignment: Qt.AlignVCenter
-          spacing: Style.space(3)
+          spacing: Style.space(2)
 
           Text {
             text: "Mouse & Pointer"
@@ -227,6 +244,7 @@ Panel {
             Layout.fillWidth: true
           }
         }
+
         // Open config file in text editor
         BorderSurface {
           implicitWidth: Style.space(30)
@@ -253,7 +271,7 @@ Panel {
         }
       }
 
-      // Tab Navigation (Motion, Scrolling, Shortcuts)
+      // Tab Navigation (Motion, Scrolling, Buttons)
       BorderSurface {
         Layout.fillWidth: true
         implicitHeight: Style.space(36)
@@ -330,12 +348,12 @@ Panel {
             }
           }
 
-          // Tab 3: Shortcuts
+          // Tab 3: Buttons
           BorderSurface {
             Layout.fillWidth: true
             Layout.fillHeight: true
             radius: Style.cornerRadius
-            color: root.activeTab === "shortcuts" ? Style.selectedFillFor(root.foreground, root.accent) : "transparent"
+            color: root.activeTab === "buttons" ? Style.selectedFillFor(root.foreground, root.accent) : "transparent"
 
             RowLayout {
               anchors.centerIn: parent
@@ -348,18 +366,18 @@ Panel {
                 font.pixelSize: Style.font.body
               }
               Text {
-                text: "Shortcuts"
-                color: root.activeTab === "shortcuts" ? root.foreground : root.dim
+                text: "Buttons"
+                color: root.activeTab === "buttons" ? root.foreground : root.dim
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
-                font.bold: root.activeTab === "shortcuts"
+                font.bold: root.activeTab === "buttons"
               }
             }
 
             MouseArea {
               anchors.fill: parent
               cursorShape: Qt.PointingHandCursor
-              onClicked: root.activeTab = "shortcuts"
+              onClicked: root.activeTab = "buttons"
             }
           }
         }
@@ -463,7 +481,7 @@ Panel {
 
                   RowLayout {
                     spacing: 4
-                    Text { text: "󰓅"; color: root.status.accel_profile === "flat" ? Color.accent : root.foreground; font.family: root.fontFamily }
+                    Text { text: "󰓅"; color: root.foreground; font.family: root.fontFamily }
                     Text { text: "Precision (1:1)"; color: root.foreground; font.bold: true; font.family: root.fontFamily; font.pixelSize: Style.font.caption }
                   }
                   Text { text: "Gaming & Design"; color: root.dim; font.pixelSize: Style.space(9); font.family: root.fontFamily }
@@ -599,52 +617,207 @@ Panel {
           Item { Layout.fillHeight: true }
         }
 
-        // TAB 3: SHORTCUTS & INTERACTIVE TEST
+        // TAB 3: BUTTON MAPPINGS & INTERACTIVE TEST
         ColumnLayout {
           anchors.fill: parent
-          visible: root.activeTab === "shortcuts"
-          spacing: Style.spacing.sm
+          visible: root.activeTab === "buttons"
+          spacing: Style.spacing.xs
 
           Text {
-            text: "Mouse Gestures & Shortcuts"
+            text: "Mouse Button Mapping"
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.subtitle
             font.bold: true
           }
 
-          // Visual Shortcuts List
+          // Side Button 1 (Back / 275)
           BorderSurface {
             Layout.fillWidth: true
-            implicitHeight: Style.space(120)
+            implicitHeight: Style.space(40)
             radius: Style.cornerRadius
-            color: Style.normalFillFor(root.foreground, root.accent)
-            padding: Style.spacing.sm
+            color: sideBackHover.hovered ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
+            borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
 
-            ColumnLayout {
+            RowLayout {
               anchors.fill: parent
-              spacing: Style.spacing.xs
+              anchors.leftMargin: Style.space(8)
+              anchors.rightMargin: Style.space(8)
+              spacing: Style.spacing.sm
 
-              RowLayout {
-                spacing: Style.spacing.xs
-                Text { text: "󰆿 Super + Left Drag:"; color: Color.accent; font.family: root.fontFamily; font.bold: true; font.pixelSize: Style.font.caption }
-                Text { text: "Move window"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption }
+              ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 1
+                Text { text: "󰍽 Side Button 1 (Back)"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.bold: true }
+                Text { text: "Click to cycle action"; color: root.dim; font.family: root.fontFamily; font.pixelSize: Style.space(8) }
               }
-              RowLayout {
-                spacing: Style.spacing.xs
-                Text { text: "󰆿 Super + Right Drag:"; color: Color.accent; font.family: root.fontFamily; font.bold: true; font.pixelSize: Style.font.caption }
-                Text { text: "Resize window"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption }
+
+              BorderSurface {
+                implicitHeight: Style.space(24)
+                implicitWidth: sideBackLabel.implicitWidth + Style.space(14)
+                radius: Style.cornerRadius
+                color: Style.selectedFillFor(root.foreground, root.accent)
+                borderSpec: Border.controlSpec("selected", root.foreground, root.accent)
+
+                Text {
+                  id: sideBackLabel
+                  anchors.centerIn: parent
+                  text: Model.getOptionLabel(Model.sideBackOptions(), root.status.button_mappings ? root.status.button_mappings.side_back : "default")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
               }
-              RowLayout {
-                spacing: Style.spacing.xs
-                Text { text: "󰆿 Super + Wheel:"; color: Color.accent; font.family: root.fontFamily; font.bold: true; font.pixelSize: Style.font.caption }
-                Text { text: "Switch workspaces"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption }
+            }
+
+            MouseArea {
+              id: sideBackHover
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: {
+                var cur = root.status.button_mappings ? root.status.button_mappings.side_back : "default"
+                var next = Model.cycleOption(Model.sideBackOptions(), cur)
+                root.updateButtonMapping("side_back", next)
               }
-              RowLayout {
-                spacing: Style.spacing.xs
-                Text { text: "󰆿 Side Buttons (4/5):"; color: Color.accent; font.family: root.fontFamily; font.bold: true; font.pixelSize: Style.font.caption }
-                Text { text: "Back / Forward in apps"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption }
+            }
+          }
+
+          // Side Button 2 (Forward / 276)
+          BorderSurface {
+            Layout.fillWidth: true
+            implicitHeight: Style.space(40)
+            radius: Style.cornerRadius
+            color: sideFwdHover.hovered ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
+            borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.space(8)
+              anchors.rightMargin: Style.space(8)
+              spacing: Style.spacing.sm
+
+              ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 1
+                Text { text: "󰍽 Side Button 2 (Forward)"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.bold: true }
+                Text { text: "Click to cycle action"; color: root.dim; font.family: root.fontFamily; font.pixelSize: Style.space(8) }
               }
+
+              BorderSurface {
+                implicitHeight: Style.space(24)
+                implicitWidth: sideFwdLabel.implicitWidth + Style.space(14)
+                radius: Style.cornerRadius
+                color: Style.selectedFillFor(root.foreground, root.accent)
+                borderSpec: Border.controlSpec("selected", root.foreground, root.accent)
+
+                Text {
+                  id: sideFwdLabel
+                  anchors.centerIn: parent
+                  text: Model.getOptionLabel(Model.sideForwardOptions(), root.status.button_mappings ? root.status.button_mappings.side_forward : "default")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+              }
+            }
+
+            MouseArea {
+              id: sideFwdHover
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: {
+                var cur = root.status.button_mappings ? root.status.button_mappings.side_forward : "default"
+                var next = Model.cycleOption(Model.sideForwardOptions(), cur)
+                root.updateButtonMapping("side_forward", next)
+              }
+            }
+          }
+
+          // Middle Click (274)
+          BorderSurface {
+            Layout.fillWidth: true
+            implicitHeight: Style.space(40)
+            radius: Style.cornerRadius
+            color: middleHover.hovered ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
+            borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.space(8)
+              anchors.rightMargin: Style.space(8)
+              spacing: Style.spacing.sm
+
+              ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 1
+                Text { text: "󰍽 Middle Click (Wheel)"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.bold: true }
+                Text { text: "Click to cycle action"; color: root.dim; font.family: root.fontFamily; font.pixelSize: Style.space(8) }
+              }
+
+              BorderSurface {
+                implicitHeight: Style.space(24)
+                implicitWidth: middleLabel.implicitWidth + Style.space(14)
+                radius: Style.cornerRadius
+                color: Style.selectedFillFor(root.foreground, root.accent)
+                borderSpec: Border.controlSpec("selected", root.foreground, root.accent)
+
+                Text {
+                  id: middleLabel
+                  anchors.centerIn: parent
+                  text: Model.getOptionLabel(Model.middleClickOptions(), root.status.button_mappings ? root.status.button_mappings.middle_click : "default")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+              }
+            }
+
+            MouseArea {
+              id: middleHover
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: {
+                var cur = root.status.button_mappings ? root.status.button_mappings.middle_click : "default"
+                var next = Model.cycleOption(Model.middleClickOptions(), cur)
+                root.updateButtonMapping("middle_click", next)
+              }
+            }
+          }
+
+          // Modifier Gestures Toggles
+          Toggle {
+            Layout.fillWidth: true
+            label: "Super + Left Drag: Move Window"
+            checked: root.status.button_mappings ? (root.status.button_mappings.super_left !== "disabled") : true
+            onClicked: {
+              var cur = root.status.button_mappings ? root.status.button_mappings.super_left : "move_window"
+              root.updateButtonMapping("super_left", cur === "disabled" ? "move_window" : "disabled")
+            }
+          }
+
+          Toggle {
+            Layout.fillWidth: true
+            label: "Super + Right Drag: Resize Window"
+            checked: root.status.button_mappings ? (root.status.button_mappings.super_right !== "disabled") : true
+            onClicked: {
+              var cur = root.status.button_mappings ? root.status.button_mappings.super_right : "resize_window"
+              root.updateButtonMapping("super_right", cur === "disabled" ? "resize_window" : "disabled")
+            }
+          }
+
+          Toggle {
+            Layout.fillWidth: true
+            label: "Super + Scroll: Switch Workspaces"
+            checked: root.status.button_mappings ? (root.status.button_mappings.super_wheel !== "disabled") : true
+            onClicked: {
+              var cur = root.status.button_mappings ? root.status.button_mappings.super_wheel : "workspace_scroll"
+              root.updateButtonMapping("super_wheel", cur === "disabled" ? "workspace_scroll" : "disabled")
             }
           }
 
@@ -652,33 +825,31 @@ Panel {
           BorderSurface {
             id: testBox
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            implicitHeight: Style.space(42)
             radius: Style.cornerRadius
             color: testArea.containsMouse ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
             borderSpec: Border.controlSpec(testArea.containsMouse ? "hover-cursor" : "normal", root.foreground, root.accent)
 
-            property string testMsg: "Click or scroll here to test"
+            property string testMsg: "Click or scroll here to test buttons"
             property int clickCount: 0
 
-            ColumnLayout {
+            RowLayout {
               anchors.centerIn: parent
-              spacing: 4
+              spacing: Style.space(8)
 
               Text {
-                text: "󰛤 Interactive Testing Zone"
+                text: "󰛤"
                 color: Color.accent
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
-                font.bold: true
-                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: Style.font.body
               }
 
               Text {
                 text: testBox.testMsg
                 color: root.foreground
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.body
-                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: Style.font.caption
+                font.bold: true
               }
             }
 
@@ -686,14 +857,16 @@ Panel {
               id: testArea
               anchors.fill: parent
               hoverEnabled: true
-              acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+              acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton | Qt.BackButton | Qt.ForwardButton
               cursorShape: Qt.PointingHandCursor
 
               onClicked: function(mouse) {
                 testBox.clickCount += 1
                 var bName = "Left Click"
                 if (mouse.button === Qt.RightButton) bName = "Right Click"
-                else if (mouse.button === Qt.MiddleButton) bName = "Middle Click"
+                else if (mouse.button === Qt.MiddleButton) bName = "Middle Click (274)"
+                else if (mouse.button === Qt.BackButton) bName = "Side Button 1 (Back / 275)"
+                else if (mouse.button === Qt.ForwardButton) bName = "Side Button 2 (Forward / 276)"
                 testBox.testMsg = bName + " detected! (#" + testBox.clickCount + ")"
               }
 
