@@ -24,7 +24,7 @@ function sideBackOptions() {
     { value: "default", label: "Browser Back (Default)" },
     { value: "prev_workspace", label: "Previous Workspace" },
     { value: "menu", label: "Omarchy Menu" },
-    { value: "prev_window", label: "Focus Previous Window" }
+    { value: "prev_window", label: "Focus Prev Window" }
   ]
 }
 
@@ -39,9 +39,9 @@ function sideForwardOptions() {
 
 function middleClickOptions() {
   return [
-    { value: "default", label: "Standard (Paste / Tab Close)" },
+    { value: "default", label: "Standard (Paste / Tab)" },
     { value: "close_window", label: "Close Active Window" },
-    { value: "toggle_floating", label: "Toggle Floating Window" },
+    { value: "toggle_floating", label: "Toggle Floating" },
     { value: "toggle_fullscreen", label: "Toggle Fullscreen" }
   ]
 }
@@ -51,16 +51,6 @@ function getOptionLabel(options, val) {
     if (options[i].value === val) return options[i].label
   }
   return options[0] ? options[0].label : ""
-}
-
-function cycleOption(options, currentVal) {
-  for (var i = 0; i < options.length; i++) {
-    if (options[i].value === currentVal) {
-      var nextIdx = (i + 1) % options.length
-      return options[nextIdx].value
-    }
-  }
-  return options[0] ? options[0].value : ""
 }
 
 function getTooltipText(status) {

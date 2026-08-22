@@ -202,17 +202,17 @@ Panel {
     bar: root.bar
     owner: root
     open: root.opened
-    contentWidth: Style.space(360)
-    contentHeight: Style.space(540)
+    contentWidth: Style.space(380)
+    contentHeight: Style.space(560)
 
     ColumnLayout {
       anchors.fill: parent
-      spacing: Style.spacing.md
+      spacing: Style.space(12)
 
       // Header Row
       RowLayout {
         Layout.fillWidth: true
-        spacing: Style.space(16)
+        spacing: Style.space(14)
 
         Text {
           text: "󰍽"
@@ -247,11 +247,12 @@ Panel {
 
         // Open config file in text editor
         BorderSurface {
-          implicitWidth: Style.space(30)
-          implicitHeight: Style.space(30)
+          implicitWidth: Style.space(32)
+          implicitHeight: Style.space(32)
           radius: Style.cornerRadius
           color: editHover.hovered ? Style.normalFillFor(root.foreground, root.accent) : "transparent"
           borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+          Layout.alignment: Qt.AlignVCenter
 
           Text {
             anchors.centerIn: parent
@@ -280,7 +281,7 @@ Panel {
 
         RowLayout {
           anchors.fill: parent
-          spacing: 2
+          spacing: Style.space(2)
 
           // Tab 1: Motion
           BorderSurface {
@@ -291,7 +292,7 @@ Panel {
 
             RowLayout {
               anchors.centerIn: parent
-              spacing: Style.spacing.xs
+              spacing: Style.space(6)
 
               Text {
                 text: "󰍽"
@@ -324,7 +325,7 @@ Panel {
 
             RowLayout {
               anchors.centerIn: parent
-              spacing: Style.spacing.xs
+              spacing: Style.space(6)
 
               Text {
                 text: "󱕒"
@@ -357,7 +358,7 @@ Panel {
 
             RowLayout {
               anchors.centerIn: parent
-              spacing: Style.spacing.xs
+              spacing: Style.space(6)
 
               Text {
                 text: "󰒋"
@@ -396,12 +397,12 @@ Panel {
         ColumnLayout {
           anchors.fill: parent
           visible: root.activeTab === "motion"
-          spacing: Style.spacing.md
+          spacing: Style.space(12)
 
           // Cursor Speed Section
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: Style.spacing.xs
+            spacing: Style.space(6)
 
             RowLayout {
               Layout.fillWidth: true
@@ -424,11 +425,12 @@ Panel {
 
             RowLayout {
               Layout.fillWidth: true
-              spacing: Style.spacing.sm
+              spacing: Style.space(8)
 
               Text {
                 text: "🐢"
                 font.pixelSize: Style.font.body
+                Layout.alignment: Qt.AlignVCenter
               }
 
               PanelSlider {
@@ -446,6 +448,7 @@ Panel {
               Text {
                 text: "🚀"
                 font.pixelSize: Style.font.body
+                Layout.alignment: Qt.AlignVCenter
               }
             }
           }
@@ -453,7 +456,7 @@ Panel {
           // Acceleration / Precision Style
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: Style.spacing.xs
+            spacing: Style.space(6)
 
             Text {
               text: "Pointer Movement Style"
@@ -465,7 +468,7 @@ Panel {
 
             RowLayout {
               Layout.fillWidth: true
-              spacing: Style.spacing.sm
+              spacing: Style.space(8)
 
               // Card: Flat / Raw 1:1
               BorderSurface {
@@ -539,7 +542,7 @@ Panel {
         ColumnLayout {
           anchors.fill: parent
           visible: root.activeTab === "scrolling"
-          spacing: Style.spacing.md
+          spacing: Style.space(12)
 
           // Natural Scrolling Toggle
           Toggle {
@@ -553,7 +556,7 @@ Panel {
           // Scroll Speed Slider
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: Style.spacing.xs
+            spacing: Style.space(6)
 
             RowLayout {
               Layout.fillWidth: true
@@ -576,9 +579,9 @@ Panel {
 
             RowLayout {
               Layout.fillWidth: true
-              spacing: Style.spacing.sm
+              spacing: Style.space(8)
 
-              Text { text: "🐌"; font.pixelSize: Style.font.body }
+              Text { text: "🐌"; font.pixelSize: Style.font.body; Layout.alignment: Qt.AlignVCenter }
 
               PanelSlider {
                 Layout.fillWidth: true
@@ -592,7 +595,7 @@ Panel {
                 }
               }
 
-              Text { text: "⚡"; font.pixelSize: Style.font.body }
+              Text { text: "⚡"; font.pixelSize: Style.font.body; Layout.alignment: Qt.AlignVCenter }
             }
           }
 
@@ -617,11 +620,11 @@ Panel {
           Item { Layout.fillHeight: true }
         }
 
-        // TAB 3: BUTTON MAPPINGS & INTERACTIVE TEST
+        // TAB 3: BUTTON MAPPINGS WITH DROPDOWN MENUS
         ColumnLayout {
           anchors.fill: parent
           visible: root.activeTab === "buttons"
-          spacing: Style.spacing.xs
+          spacing: Style.space(10)
 
           Text {
             text: "Mouse Button Mapping"
@@ -631,163 +634,116 @@ Panel {
             font.bold: true
           }
 
-          // Side Button 1 (Back / 275)
-          BorderSurface {
+          // Side Button 1 (Back / 275) Dropdown Row
+          RowLayout {
             Layout.fillWidth: true
-            implicitHeight: Style.space(40)
-            radius: Style.cornerRadius
-            color: sideBackHover.hovered ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
-            borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+            spacing: Style.space(10)
 
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: Style.space(8)
-              anchors.rightMargin: Style.space(8)
-              spacing: Style.spacing.sm
+            ColumnLayout {
+              Layout.fillWidth: true
+              Layout.alignment: Qt.AlignVCenter
+              spacing: 1
 
-              ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 1
-                Text { text: "󰍽 Side Button 1 (Back)"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.bold: true }
-                Text { text: "Click to cycle action"; color: root.dim; font.family: root.fontFamily; font.pixelSize: Style.space(8) }
+              Text {
+                text: "󰍽 Side Button 1 (Back)"
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                font.bold: true
               }
-
-              BorderSurface {
-                implicitHeight: Style.space(24)
-                implicitWidth: sideBackLabel.implicitWidth + Style.space(14)
-                radius: Style.cornerRadius
-                color: Style.selectedFillFor(root.foreground, root.accent)
-                borderSpec: Border.controlSpec("selected", root.foreground, root.accent)
-
-                Text {
-                  id: sideBackLabel
-                  anchors.centerIn: parent
-                  text: Model.getOptionLabel(Model.sideBackOptions(), root.status.button_mappings ? root.status.button_mappings.side_back : "default")
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
-                  font.bold: true
-                }
+              Text {
+                text: "Physical button 275"
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.space(9)
               }
             }
 
-            MouseArea {
-              id: sideBackHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                var cur = root.status.button_mappings ? root.status.button_mappings.side_back : "default"
-                var next = Model.cycleOption(Model.sideBackOptions(), cur)
-                root.updateButtonMapping("side_back", next)
+            Dropdown {
+              implicitWidth: Style.space(200)
+              showLabel: false
+              value: root.status.button_mappings ? root.status.button_mappings.side_back : "default"
+              options: Model.sideBackOptions()
+              onChanged: function(val) {
+                root.updateButtonMapping("side_back", val)
               }
             }
           }
 
-          // Side Button 2 (Forward / 276)
-          BorderSurface {
+          // Side Button 2 (Forward / 276) Dropdown Row
+          RowLayout {
             Layout.fillWidth: true
-            implicitHeight: Style.space(40)
-            radius: Style.cornerRadius
-            color: sideFwdHover.hovered ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
-            borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+            spacing: Style.space(10)
 
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: Style.space(8)
-              anchors.rightMargin: Style.space(8)
-              spacing: Style.spacing.sm
+            ColumnLayout {
+              Layout.fillWidth: true
+              Layout.alignment: Qt.AlignVCenter
+              spacing: 1
 
-              ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 1
-                Text { text: "󰍽 Side Button 2 (Forward)"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.bold: true }
-                Text { text: "Click to cycle action"; color: root.dim; font.family: root.fontFamily; font.pixelSize: Style.space(8) }
+              Text {
+                text: "󰍽 Side Button 2 (Forward)"
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                font.bold: true
               }
-
-              BorderSurface {
-                implicitHeight: Style.space(24)
-                implicitWidth: sideFwdLabel.implicitWidth + Style.space(14)
-                radius: Style.cornerRadius
-                color: Style.selectedFillFor(root.foreground, root.accent)
-                borderSpec: Border.controlSpec("selected", root.foreground, root.accent)
-
-                Text {
-                  id: sideFwdLabel
-                  anchors.centerIn: parent
-                  text: Model.getOptionLabel(Model.sideForwardOptions(), root.status.button_mappings ? root.status.button_mappings.side_forward : "default")
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
-                  font.bold: true
-                }
+              Text {
+                text: "Physical button 276"
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.space(9)
               }
             }
 
-            MouseArea {
-              id: sideFwdHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                var cur = root.status.button_mappings ? root.status.button_mappings.side_forward : "default"
-                var next = Model.cycleOption(Model.sideForwardOptions(), cur)
-                root.updateButtonMapping("side_forward", next)
+            Dropdown {
+              implicitWidth: Style.space(200)
+              showLabel: false
+              value: root.status.button_mappings ? root.status.button_mappings.side_forward : "default"
+              options: Model.sideForwardOptions()
+              onChanged: function(val) {
+                root.updateButtonMapping("side_forward", val)
               }
             }
           }
 
-          // Middle Click (274)
-          BorderSurface {
+          // Middle Click (274) Dropdown Row
+          RowLayout {
             Layout.fillWidth: true
-            implicitHeight: Style.space(40)
-            radius: Style.cornerRadius
-            color: middleHover.hovered ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
-            borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+            spacing: Style.space(10)
 
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: Style.space(8)
-              anchors.rightMargin: Style.space(8)
-              spacing: Style.spacing.sm
+            ColumnLayout {
+              Layout.fillWidth: true
+              Layout.alignment: Qt.AlignVCenter
+              spacing: 1
 
-              ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 1
-                Text { text: "󰍽 Middle Click (Wheel)"; color: root.foreground; font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.bold: true }
-                Text { text: "Click to cycle action"; color: root.dim; font.family: root.fontFamily; font.pixelSize: Style.space(8) }
+              Text {
+                text: "󰍽 Middle Click (Wheel)"
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                font.bold: true
               }
-
-              BorderSurface {
-                implicitHeight: Style.space(24)
-                implicitWidth: middleLabel.implicitWidth + Style.space(14)
-                radius: Style.cornerRadius
-                color: Style.selectedFillFor(root.foreground, root.accent)
-                borderSpec: Border.controlSpec("selected", root.foreground, root.accent)
-
-                Text {
-                  id: middleLabel
-                  anchors.centerIn: parent
-                  text: Model.getOptionLabel(Model.middleClickOptions(), root.status.button_mappings ? root.status.button_mappings.middle_click : "default")
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
-                  font.bold: true
-                }
+              Text {
+                text: "Physical button 274"
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.space(9)
               }
             }
 
-            MouseArea {
-              id: middleHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                var cur = root.status.button_mappings ? root.status.button_mappings.middle_click : "default"
-                var next = Model.cycleOption(Model.middleClickOptions(), cur)
-                root.updateButtonMapping("middle_click", next)
+            Dropdown {
+              implicitWidth: Style.space(200)
+              showLabel: false
+              value: root.status.button_mappings ? root.status.button_mappings.middle_click : "default"
+              options: Model.middleClickOptions()
+              onChanged: function(val) {
+                root.updateButtonMapping("middle_click", val)
               }
             }
+          }
+
+          PanelSeparator {
+            Layout.fillWidth: true
           }
 
           // Modifier Gestures Toggles
@@ -842,6 +798,7 @@ Panel {
                 color: Color.accent
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
+                Layout.alignment: Qt.AlignVCenter
               }
 
               Text {
@@ -850,6 +807,7 @@ Panel {
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
                 font.bold: true
+                Layout.alignment: Qt.AlignVCenter
               }
             }
 
@@ -886,7 +844,7 @@ Panel {
       // Footer Row: Reset & Live Status
       RowLayout {
         Layout.fillWidth: true
-        spacing: Style.spacing.sm
+        spacing: Style.space(8)
 
         BorderSurface {
           implicitHeight: Style.space(28)
@@ -894,6 +852,7 @@ Panel {
           radius: Style.cornerRadius
           color: resetHover.hovered ? Style.selectedFillFor(root.foreground, root.urgent) : "transparent"
           borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+          Layout.alignment: Qt.AlignVCenter
 
           RowLayout {
             anchors.centerIn: parent
@@ -919,6 +878,7 @@ Panel {
           color: root.isSaving ? Color.accent : root.dim
           font.family: root.fontFamily
           font.pixelSize: Style.font.caption
+          Layout.alignment: Qt.AlignVCenter
         }
       }
     }
