@@ -635,13 +635,13 @@ Panel {
           }
 
           // Side Button 1 (Back / 275) Dropdown Row
-          RowLayout {
+          Item {
             Layout.fillWidth: true
-            spacing: Style.space(8)
+            implicitHeight: Style.spacing.controlHeight
 
-            ColumnLayout {
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Column {
+              anchors.left: parent.left
+              anchors.verticalCenter: parent.verticalCenter
               spacing: 1
 
               Text {
@@ -660,13 +660,9 @@ Panel {
             }
 
             Dropdown {
-              Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-              Layout.preferredWidth: Style.space(180)
-              Layout.minimumWidth: Style.space(180)
-              Layout.maximumWidth: Style.space(180)
-              Layout.preferredHeight: Style.spacing.controlHeight
-              implicitWidth: Style.space(180)
-              implicitHeight: Style.spacing.controlHeight
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              width: Style.space(180)
               showLabel: false
               value: root.status.button_mappings ? root.status.button_mappings.side_back : "default"
               options: Model.sideBackOptions()
@@ -677,13 +673,13 @@ Panel {
           }
 
           // Side Button 2 (Forward / 276) Dropdown Row
-          RowLayout {
+          Item {
             Layout.fillWidth: true
-            spacing: Style.space(8)
+            implicitHeight: Style.spacing.controlHeight
 
-            ColumnLayout {
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Column {
+              anchors.left: parent.left
+              anchors.verticalCenter: parent.verticalCenter
               spacing: 1
 
               Text {
@@ -702,13 +698,9 @@ Panel {
             }
 
             Dropdown {
-              Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-              Layout.preferredWidth: Style.space(180)
-              Layout.minimumWidth: Style.space(180)
-              Layout.maximumWidth: Style.space(180)
-              Layout.preferredHeight: Style.spacing.controlHeight
-              implicitWidth: Style.space(180)
-              implicitHeight: Style.spacing.controlHeight
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              width: Style.space(180)
               showLabel: false
               value: root.status.button_mappings ? root.status.button_mappings.side_forward : "default"
               options: Model.sideForwardOptions()
@@ -719,13 +711,13 @@ Panel {
           }
 
           // Middle Click (274) Dropdown Row
-          RowLayout {
+          Item {
             Layout.fillWidth: true
-            spacing: Style.space(8)
+            implicitHeight: Style.spacing.controlHeight
 
-            ColumnLayout {
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Column {
+              anchors.left: parent.left
+              anchors.verticalCenter: parent.verticalCenter
               spacing: 1
 
               Text {
@@ -744,13 +736,9 @@ Panel {
             }
 
             Dropdown {
-              Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-              Layout.preferredWidth: Style.space(180)
-              Layout.minimumWidth: Style.space(180)
-              Layout.maximumWidth: Style.space(180)
-              Layout.preferredHeight: Style.spacing.controlHeight
-              implicitWidth: Style.space(180)
-              implicitHeight: Style.spacing.controlHeight
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              width: Style.space(180)
               showLabel: false
               value: root.status.button_mappings ? root.status.button_mappings.middle_click : "default"
               options: Model.middleClickOptions()
