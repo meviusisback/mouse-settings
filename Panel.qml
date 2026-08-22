@@ -530,7 +530,7 @@ Panel {
           Toggle {
             Layout.fillWidth: true
             label: "Left-Handed Mode"
-            description: "Swap primary and secondary mouse buttons"
+            description: "Swap primary and secondary mouse btns"
             checked: root.status.left_handed
             onClicked: root.applySettings({ left_handed: !root.status.left_handed })
           }
@@ -587,8 +587,8 @@ Panel {
                 Layout.fillWidth: true
                 bar: root.bar
                 minimum: 0.2
-                maximum: 3.0
-                step: 0.1
+                maximum: 8.0
+                step: 0.2
                 value: root.status.scroll_factor
                 onReleased: function(v) {
                   root.applySettings({ scroll_factor: Math.round(v * 10) / 10 })
@@ -627,7 +627,7 @@ Panel {
           spacing: Style.space(10)
 
           Text {
-            text: "Mouse Button Mapping"
+            text: "Mouse Btn Mapping"
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.subtitle
@@ -645,14 +645,14 @@ Panel {
               spacing: 1
 
               Text {
-                text: "󰍽 Side Button 1 (Back)"
+                text: "󰍽 Side Btn 1 (Bck)"
                 color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
                 font.bold: true
               }
               Text {
-                text: "Physical button 275"
+                text: "Physical btn 275"
                 color: root.dim
                 font.family: root.fontFamily
                 font.pixelSize: Style.space(9)
@@ -681,14 +681,14 @@ Panel {
               spacing: 1
 
               Text {
-                text: "󰍽 Side Button 2 (Forward)"
+                text: "󰍽 Side Btn 2 (Fwd)"
                 color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
                 font.bold: true
               }
               Text {
-                text: "Physical button 276"
+                text: "Physical btn 276"
                 color: root.dim
                 font.family: root.fontFamily
                 font.pixelSize: Style.space(9)
@@ -717,14 +717,14 @@ Panel {
               spacing: 1
 
               Text {
-                text: "󰍽 Middle Click (Wheel)"
+                text: "󰍽 Middle Btn (Wheel)"
                 color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
                 font.bold: true
               }
               Text {
-                text: "Physical button 274"
+                text: "Physical btn 274"
                 color: root.dim
                 font.family: root.fontFamily
                 font.pixelSize: Style.space(9)
@@ -786,7 +786,7 @@ Panel {
             color: testArea.containsMouse ? Style.selectedFillFor(root.foreground, root.accent) : Style.normalFillFor(root.foreground, root.accent)
             borderSpec: Border.controlSpec(testArea.containsMouse ? "hover-cursor" : "normal", root.foreground, root.accent)
 
-            property string testMsg: "Click or scroll here to test buttons"
+            property string testMsg: "Click or scroll here to test btns"
             property int clickCount: 0
 
             RowLayout {
@@ -820,11 +820,11 @@ Panel {
 
               onClicked: function(mouse) {
                 testBox.clickCount += 1
-                var bName = "Left Click"
-                if (mouse.button === Qt.RightButton) bName = "Right Click"
-                else if (mouse.button === Qt.MiddleButton) bName = "Middle Click (274)"
-                else if (mouse.button === Qt.BackButton) bName = "Side Button 1 (Back / 275)"
-                else if (mouse.button === Qt.ForwardButton) bName = "Side Button 2 (Forward / 276)"
+                var bName = "Left Btn"
+                if (mouse.button === Qt.RightButton) bName = "Right Btn"
+                else if (mouse.button === Qt.MiddleButton) bName = "Middle Btn (274)"
+                else if (mouse.button === Qt.BackButton) bName = "Side Btn 1 (Bck / 275)"
+                else if (mouse.button === Qt.ForwardButton) bName = "Side Btn 2 (Fwd / 276)"
                 testBox.testMsg = bName + " detected! (#" + testBox.clickCount + ")"
               }
 

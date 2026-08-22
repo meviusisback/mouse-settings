@@ -21,8 +21,8 @@ function formatDeviceName(rawName) {
 
 function sideBackOptions() {
   return [
-    { value: "default", label: "Browser Back (Default)" },
-    { value: "prev_workspace", label: "Previous Workspace" },
+    { value: "default", label: "Browser Bck (Default)" },
+    { value: "prev_workspace", label: "Prev Workspace" },
     { value: "menu", label: "Omarchy Menu" },
     { value: "prev_window", label: "Focus Prev Window" }
   ]
@@ -30,7 +30,7 @@ function sideBackOptions() {
 
 function sideForwardOptions() {
   return [
-    { value: "default", label: "Browser Forward (Default)" },
+    { value: "default", label: "Browser Fwd (Default)" },
     { value: "next_workspace", label: "Next Workspace" },
     { value: "terminal", label: "Launch Terminal" },
     { value: "next_window", label: "Focus Next Window" }
