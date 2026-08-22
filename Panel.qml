@@ -74,10 +74,14 @@ Panel {
     applyProc.running = true
   }
 
-  function toggleAccelMode() {
-    toggleAccelProc.running = true
-  }
+  property double lastToggleMs: 0
 
+  function toggleAccelMode() {
+    var now = Date.now()
+    if (now - lastToggleMs < 300) return
+    lastToggleMs = now
+    if (!toggleAccelProc.running) toggleAccelProc.running = true
+  }
   function toggleNaturalScroll() {
     toggleScrollProc.running = true
   }
@@ -134,8 +138,28 @@ Panel {
       waitForEnd: true
       onStreamFinished: {
         root.isSaving = false
-        root.lastActionNote = "Saved"
+        var output = text || ""
+        try {
+          var data = JSON.parse(output)
+          if (data.success) {
+            root.lastActionNote = "Saved"
+          } else {
+            root.lastActionNote = data.error ? "Error" : "Failed"
+          }
+        } catch (e) {
+          root.lastActionNote = "Saved"
+        }
         clearNoteTimer.restart()
+      }
+    }
+    stderr: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        if (text.trim() !== "") {
+          root.isSaving = false
+          root.lastActionNote = "Error"
+          clearNoteTimer.restart()
+        }
       }
     }
   }
@@ -237,13 +261,13 @@ Panel {
 
           Text {
             text: Model.formatDeviceName(root.status.primaryDevice)
+            textFormat: Text.PlainText
             color: root.dim
             font.family: root.fontFamily
             font.pixelSize: Style.font.caption
             elide: Text.ElideRight
             Layout.fillWidth: true
           }
-        }
 
         // Open config file in text editor
         BorderSurface {
@@ -808,13 +832,13 @@ Panel {
 
               Text {
                 text: testBox.testMsg
+                textFormat: Text.PlainText
                 color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
                 font.bold: true
                 Layout.alignment: Qt.AlignVCenter
               }
-            }
 
             MouseArea {
               id: testArea
