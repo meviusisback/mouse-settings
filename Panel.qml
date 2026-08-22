@@ -195,18 +195,30 @@ Panel {
       // Header Row
       RowLayout {
         Layout.fillWidth: true
-        spacing: Style.spacing.sm
+        spacing: Style.space(16)
 
-        Text {
-          text: "󰍽"
-          color: root.accent
-          font.family: root.fontFamily
-          font.pixelSize: Style.font.title
+        // Prominent mouse icon badge
+        BorderSurface {
+          implicitWidth: Style.space(42)
+          implicitHeight: Style.space(42)
+          radius: Style.cornerRadius
+          color: Style.selectedFillFor(root.foreground, root.accent)
+          borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+          Layout.alignment: Qt.AlignVCenter
+
+          Text {
+            anchors.centerIn: parent
+            text: "󰍽"
+            color: root.accent
+            font.family: root.fontFamily
+            font.pixelSize: Style.space(26)
+          }
         }
 
         ColumnLayout {
           Layout.fillWidth: true
-          spacing: 2
+          Layout.alignment: Qt.AlignVCenter
+          spacing: Style.space(3)
 
           Text {
             text: "Mouse & Pointer"
@@ -225,7 +237,6 @@ Panel {
             Layout.fillWidth: true
           }
         }
-
         // Open config file in text editor
         BorderSurface {
           implicitWidth: Style.space(30)
