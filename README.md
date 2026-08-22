@@ -133,18 +133,10 @@ omarchy plugin add https://github.com/meviusisback/mouse-settings --enable
 
 ### Manual Installation
 
-Clone into your local Omarchy plugins directory:
-
-```bash
-git clone https://github.com/meviusisback/mouse-settings.git \
-  ~/.config/omarchy/plugins/meviusisback.mouse-settings
-```
-
-Reload or restart your Omarchy shell:
-
-```bash
-omarchy-shell reload
-```
+Not required — the plugin manager command above works from any git URL and
+handles updates via `omarchy plugin update`. Cloning by hand into
+`~/.config/omarchy/plugins/` is discouraged: it skips manifest-managed
+lifecycle and will not be tracked for updates.
 
 ---
 
