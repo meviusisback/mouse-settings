@@ -637,11 +637,11 @@ Panel {
           // Side Button 1 (Back / 275) Dropdown Row
           RowLayout {
             Layout.fillWidth: true
-            spacing: Style.space(10)
+            spacing: Style.space(8)
 
             ColumnLayout {
               Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
               spacing: 1
 
               Text {
@@ -660,7 +660,13 @@ Panel {
             }
 
             Dropdown {
-              implicitWidth: Style.space(200)
+              Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+              Layout.preferredWidth: Style.space(180)
+              Layout.minimumWidth: Style.space(180)
+              Layout.maximumWidth: Style.space(180)
+              Layout.preferredHeight: Style.spacing.controlHeight
+              implicitWidth: Style.space(180)
+              implicitHeight: Style.spacing.controlHeight
               showLabel: false
               value: root.status.button_mappings ? root.status.button_mappings.side_back : "default"
               options: Model.sideBackOptions()
@@ -673,11 +679,11 @@ Panel {
           // Side Button 2 (Forward / 276) Dropdown Row
           RowLayout {
             Layout.fillWidth: true
-            spacing: Style.space(10)
+            spacing: Style.space(8)
 
             ColumnLayout {
               Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
               spacing: 1
 
               Text {
@@ -696,7 +702,13 @@ Panel {
             }
 
             Dropdown {
-              implicitWidth: Style.space(200)
+              Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+              Layout.preferredWidth: Style.space(180)
+              Layout.minimumWidth: Style.space(180)
+              Layout.maximumWidth: Style.space(180)
+              Layout.preferredHeight: Style.spacing.controlHeight
+              implicitWidth: Style.space(180)
+              implicitHeight: Style.spacing.controlHeight
               showLabel: false
               value: root.status.button_mappings ? root.status.button_mappings.side_forward : "default"
               options: Model.sideForwardOptions()
@@ -709,11 +721,11 @@ Panel {
           // Middle Click (274) Dropdown Row
           RowLayout {
             Layout.fillWidth: true
-            spacing: Style.space(10)
+            spacing: Style.space(8)
 
             ColumnLayout {
               Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
               spacing: 1
 
               Text {
@@ -732,7 +744,13 @@ Panel {
             }
 
             Dropdown {
-              implicitWidth: Style.space(200)
+              Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+              Layout.preferredWidth: Style.space(180)
+              Layout.minimumWidth: Style.space(180)
+              Layout.maximumWidth: Style.space(180)
+              Layout.preferredHeight: Style.spacing.controlHeight
+              implicitWidth: Style.space(180)
+              implicitHeight: Style.spacing.controlHeight
               showLabel: false
               value: root.status.button_mappings ? root.status.button_mappings.middle_click : "default"
               options: Model.middleClickOptions()
@@ -741,7 +759,6 @@ Panel {
               }
             }
           }
-
           PanelSeparator {
             Layout.fillWidth: true
           }
