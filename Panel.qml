@@ -197,22 +197,12 @@ Panel {
         Layout.fillWidth: true
         spacing: Style.space(16)
 
-        // Prominent mouse icon badge
-        BorderSurface {
-          implicitWidth: Style.space(42)
-          implicitHeight: Style.space(42)
-          radius: Style.cornerRadius
-          color: Style.selectedFillFor(root.foreground, root.accent)
-          borderSpec: Border.controlSpec("normal", root.foreground, root.accent)
+        Text {
+          text: "󰍽"
+          color: root.foreground
+          font.family: root.fontFamily
+          font.pixelSize: Style.space(32)
           Layout.alignment: Qt.AlignVCenter
-
-          Text {
-            anchors.centerIn: parent
-            text: "󰍽"
-            color: root.accent
-            font.family: root.fontFamily
-            font.pixelSize: Style.space(26)
-          }
         }
 
         ColumnLayout {
@@ -287,7 +277,7 @@ Panel {
 
               Text {
                 text: "󰍽"
-                color: root.activeTab === "motion" ? Color.accent : root.foreground
+                color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
               }
@@ -320,7 +310,7 @@ Panel {
 
               Text {
                 text: "󱕒"
-                color: root.activeTab === "scrolling" ? Color.accent : root.foreground
+                color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
               }
@@ -353,7 +343,7 @@ Panel {
 
               Text {
                 text: "󰒋"
-                color: root.activeTab === "shortcuts" ? Color.accent : root.foreground
+                color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
               }
