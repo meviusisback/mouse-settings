@@ -6,6 +6,10 @@
 
 A modern, secure, and intuitive graphical mouse and pointer configuration tool for [Omarchy Linux](https://omarchy.org). Adjust cursor speed, toggle between 1:1 precision and adaptive acceleration, customize scroll behavior, remap extra mouse buttons, and test input events in real time—all with instant Hyprland application and zero config breakage.
 
+
+<p align="center">
+  <img src="preview.png" alt="Mouse & Pointer Settings" width="380">
+</p>
 ---
 
 ## 📑 Table of Contents
