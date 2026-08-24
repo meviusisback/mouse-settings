@@ -46,6 +46,23 @@ function middleClickOptions() {
   ]
 }
 
+function simulateButtons() {
+  return [
+    { value: "left", label: "L" },
+    { value: "right", label: "R" },
+    { value: "middle", label: "M" },
+    { value: "side_back", label: "S1" },
+    { value: "side_forward", label: "S2" }
+  ]
+}
+
+function formatBattery(battery, withModel) {
+  if (!battery || battery.percent === undefined || battery.percent === null) return ""
+  var s = " · 🔋 " + Math.round(Number(battery.percent)) + "%"
+  if (withModel && battery.model) s += " (" + battery.model + ")"
+  return s
+}
+
 function getOptionLabel(options, val) {
   for (var i = 0; i < options.length; i++) {
     if (options[i].value === val) return options[i].label
@@ -58,5 +75,5 @@ function getTooltipText(status) {
   var dev = formatDeviceName(status.primaryDevice || "Mouse")
   var mode = status.accel_profile === "flat" ? "Precision (1:1)" : "Dynamic"
   var spd = formatSpeed(status.sensitivity)
-  return dev + " · " + mode + " · " + spd
+  return dev + " · " + mode + " · " + spd + formatBattery(status.battery, true)
 }

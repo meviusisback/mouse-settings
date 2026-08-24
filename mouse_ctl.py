@@ -15,6 +15,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -47,6 +48,14 @@ ALLOWED_BUTTON_ACTIONS = {
     "super_left": {"move_window", "disabled"},
     "super_right": {"resize_window", "disabled"},
     "super_wheel": {"workspace_scroll", "disabled"}
+}
+
+SIMULATE_BUTTON_CODES = {
+    "left": "0xC0",
+    "right": "0xC1",
+    "middle": "0xC2",
+    "side_back": "0xC3",
+    "side_forward": "0xC4"
 }
 
 @contextmanager
@@ -186,9 +195,46 @@ def get_devices():
                 "defaultSpeed": validate_float(m.get("defaultSpeed"), 0.0, -1.0, 1.0),
                 "scrollFactor": validate_float(m.get("scrollFactor"), 1.0, 0.1, 10.0)
             })
+        # Rank real mice first: keyboard "consumer control" and virtual devices
+        def _mouse_rank(name_l):
+            if "mouse" in name_l:
+                return 0
+            if "keyboard" in name_l or "consumer" in name_l or "virtual" in name_l:
+                return 2
+            return 1
+        clean_mice.sort(key=lambda d: _mouse_rank(d["name"].lower()))
         return clean_mice
     except Exception:
         return []
+
+def get_battery(primary_name=""):
+    """Read the battery of the selected mouse itself via upower, if it reports one.
+    Matches the UPower battery model against the device name so another
+    peripheral's battery (e.g. a keyboard) is never shown."""
+    code, out, _ = run_cmd(["upower", "-e"])
+    if code != 0 or not out:
+        return None
+    dev_tokens = set(re.findall(r"[a-z0-9]+", primary_name.lower()))
+    dev_tokens.discard("mouse")
+    for hid_path in [ln.strip() for ln in out.splitlines() if "battery_hid" in ln]:
+        code, info, _ = run_cmd(["upower", "-i", hid_path])
+        if code != 0 or not info:
+            continue
+        pct_match = re.search(r"percentage:\s*([0-9]*\.?[0-9]+)%", info)
+        if not pct_match:
+            continue
+        state_match = re.search(r"state:\s*(\S+)", info)
+        model_match = re.search(r"model:\s*(.+)", info)
+        model = model_match.group(1).strip() if model_match else ""
+        model_tokens = set(re.findall(r"[a-z0-9]+", model.lower()))
+        if dev_tokens and (dev_tokens & model_tokens):
+            return {
+                "percent": validate_float(pct_match.group(1), 0.0, 0.0, 100.0),
+                "state": state_match.group(1) if state_match else "unknown",
+                "model": model
+            }
+    return None
+
 
 def read_saved_input_settings():
     """Reads settings previously saved in the marker block of input.lua."""
@@ -298,7 +344,7 @@ def get_current_status():
     return {
         "devices": devices,
         "primaryDevice": devices[0]["name"] if devices else "Standard Mouse",
-        "sensitivity": sensitivity,
+        "battery": get_battery(devices[0]["name"] if devices else ""),
         "accel_profile": accel_profile,
         "is_flat": (accel_profile == "flat"),
         "follow_mouse": follow_mouse,
@@ -306,6 +352,7 @@ def get_current_status():
         "left_handed": left_handed,
         "scroll_factor": scroll_factor,
         "mouse_refocus": mouse_refocus,
+        "battery": get_battery(),
         "button_mappings": button_mappings
     }
 
@@ -491,11 +538,31 @@ def main():
     # reset
     subparsers.add_parser("reset-defaults", help="Reset mouse settings to default")
 
+    # simulate button press (ydotool)
+    simulate_parser = subparsers.add_parser("simulate-button", help="Emit a synthetic mouse button press via ydotool")
+    simulate_parser.add_argument("--button", type=str, required=True, choices=sorted(SIMULATE_BUTTON_CODES.keys()))
+
     args = parser.parse_args()
 
     if args.command == "status" or not args.command:
         state = get_current_status()
         print(json.dumps(state, indent=2))
+        return
+
+    if args.command == "simulate-button":
+        code = SIMULATE_BUTTON_CODES[args.button]
+        if shutil.which("ydotool") is None:
+            print(json.dumps({"success": False, "error": "ydotool not installed"}))
+            return
+        ret, out, err_out = run_cmd(["ydotool", "click", "-D", "50", code])
+        if ret == 0:
+            print(json.dumps({"success": True, "button": args.button}))
+        else:
+            err_l = (err_out + "\n" + out).lower()
+            if "socket" in err_l or "connect" in err_l or "ydotoold" in err_l or "failed to open" in err_l:
+                print(json.dumps({"success": False, "error": "ydotoold unavailable"}))
+            else:
+                print(json.dumps({"success": False, "error": err_out.strip() or f"ydotool exited {ret}"}))
         return
 
     with file_lock():

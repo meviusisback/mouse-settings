@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Hyprland Ready](https://img.shields.io/badge/Hyprland-Native-teal?style=flat-square)](https://hyprland.org)
 
-A modern, secure, and intuitive graphical mouse and pointer configuration tool for [Omarchy Linux](https://omarchy.org). Adjust cursor speed, toggle between 1:1 precision and adaptive acceleration, customize scroll behavior, remap extra mouse buttons, and test input events in real time—all with instant Hyprland application and zero config breakage.
+A modern, secure, and intuitive graphical mouse and pointer configuration tool for [Omarchy Linux](https://omarchy.org). Adjust cursor speed, toggle between 1:1 precision and adaptive acceleration, customize scroll behavior, remap extra mouse buttons, simulate button presses, and test input events in real time—all with instant Hyprland application and zero config breakage.
 
 
 <p align="center">
@@ -37,6 +37,9 @@ A modern, secure, and intuitive graphical mouse and pointer configuration tool f
 - **📜 Multiplier & Natural Scrolling**: Adjust scroll sensitivity up to 8.0x and toggle natural (touchpad/macOS-style) direction.
 - **🛡️ Enterprise-Grade Reliability**: Built with atomic writes (`os.replace` + `fsync`), POSIX concurrency file locks (`fcntl.flock`), symlink attack prevention, and strict parameter allowlists.
 - **🧪 Live Input Verification**: Built-in interactive test canvas confirms button presses, side keys, and scroll directions immediately.
+- **🖱️ Simulate Any Button Press**: Emit real synthetic presses of Left, Right, Middle (274), Side Bck (275), or Side Fwd (276) from the Buttons tab or the CLI — test button remaps and Hyprland binds without having the physical buttons (powered by `ydotool`).
+- **🔋 Mouse Battery Indicator**: Shows the remaining battery percentage of your wireless mouse in the panel header and tooltip (via `upower`) — automatically hidden when the mouse does not report a battery, and never confused with other peripherals' batteries.
+- **🎯 Smart Device Detection**: Identifies your actual mouse even when keyboards and virtual devices appear in Hyprland's pointer list.
 
 ---
 
@@ -114,6 +117,10 @@ Easily customize non-standard physical buttons and gesture shortcuts:
 | **Super + Right Drag** | `SUPER + mouse:273` | • **Resize Window** (`resizewindow`) or **Disabled** |
 | **Super + Wheel Scroll** | `SUPER + mouse_up/down` | • **Switch Workspaces** (`workspace, e-1 / e+1`) or **Disabled** |
 
+Below the remapping dropdowns, the **Simulate Button Press** row offers five equal-width chips (`L`, `R`, `M`, `S1`, `S2`). Clicking one sends a synthetic press of that physical button via `ydotool` — it feeds a real input event into Hyprland, so remapped actions fire and the interactive testing canvas below reports the detection exactly as if you had pressed the hardware button. Requires the `ydotoold` daemon (see Installation).
+
+**Battery Indicator**: When your mouse reports a battery level over HID (most Logitech and newer wireless mice do), the remaining percentage appears next to the device name in the popup header and in the bar icon tooltip, sourced via `upower`. Mice whose firmware does not expose the HID battery page (many budget 2.4 GHz receivers) simply show no indicator.
+
 ---
 
 ### Interactive Testing Canvas
@@ -137,7 +144,14 @@ omarchy plugin add https://github.com/meviusisback/mouse-settings --enable
 
 ### Manual Installation
 
-Not required — the plugin manager command above works from any git URL and
+Prerequisite for button simulation:
+
+```bash
+sudo pacman -S ydotool
+systemctl --user enable --now ydotool.service
+```
+
+Not required for core settings — the plugin manager command above works from any git URL and
 handles updates via `omarchy plugin update`. Cloning by hand into
 `~/.config/omarchy/plugins/` is discouraged: it skips manifest-managed
 lifecycle and will not be tracked for updates.
@@ -189,6 +203,9 @@ python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py apply
 
 # Reset all mouse settings and button bindings to defaults
 python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py reset-defaults
+
+# Simulate a physical mouse button press via ydotool
+python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py simulate-button --button side_back   # left|right|middle|side_back|side_forward
 ```
 
 ---

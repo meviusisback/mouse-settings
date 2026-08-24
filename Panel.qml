@@ -82,6 +82,25 @@ Panel {
     lastToggleMs = now
     if (!toggleAccelProc.running) toggleAccelProc.running = true
   }
+
+  property double lastSimMs: 0
+
+  function simLabel(name) {
+    if (name === "left") return "Left Btn"
+    if (name === "right") return "Right Btn"
+    if (name === "middle") return "Middle Btn (274)"
+    if (name === "side_back") return "Side Btn 1 (Bck / 275)"
+    if (name === "side_forward") return "Side Btn 2 (Fwd / 276)"
+    return name
+  }
+
+  function simulateButton(name) {
+    var now = Date.now()
+    if (now - lastSimMs < 300) return
+    lastSimMs = now
+    simulateProc.command = ["python3", root.scriptPath(), "simulate-button", "--button", name]
+    if (!simulateProc.running) simulateProc.running = true
+  }
   function toggleNaturalScroll() {
     toggleScrollProc.running = true
   }
@@ -192,6 +211,29 @@ Panel {
   }
 
   Process {
+    id: simulateProc
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var output = text || ""
+        try {
+          var data = JSON.parse(output)
+          if (data.success) {
+            testBox.clickCount += 1
+            testBox.testMsg = "Simulated " + root.simLabel(data.button) + " (#" + testBox.clickCount + ")"
+            root.lastActionNote = "Sent"
+          } else {
+            root.lastActionNote = "Sim N/A"
+          }
+        } catch (e) {
+          root.lastActionNote = "Sim N/A"
+        }
+        clearNoteTimer.restart()
+      }
+    }
+  }
+
+  Process {
     id: configEditorProc
     command: ["omarchy-launch-config-editor", Quickshell.env("HOME") + "/.config/hypr/input.lua"]
   }
@@ -227,7 +269,7 @@ Panel {
     owner: root
     open: root.opened
     contentWidth: Style.space(380)
-    contentHeight: Style.space(560)
+    contentHeight: Style.space(660)
 
     ColumnLayout {
       anchors.fill: parent
@@ -260,7 +302,7 @@ Panel {
           }
 
           Text {
-            text: Model.formatDeviceName(root.status.primaryDevice)
+            text: Model.formatDeviceName(root.status.primaryDevice) + Model.formatBattery(root.status.battery, false)
             textFormat: Text.PlainText
             color: root.dim
             font.family: root.fontFamily
@@ -805,6 +847,53 @@ Panel {
               var cur = root.status.button_mappings ? root.status.button_mappings.super_wheel : "workspace_scroll"
               root.updateButtonMapping("super_wheel", cur === "disabled" ? "workspace_scroll" : "disabled")
             }
+          }
+
+          // Simulate Button Press Row
+          Text {
+            text: "Simulate Button Press"
+            color: root.foreground
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.subtitle
+            font.bold: true
+          }
+
+          RowLayout {
+            Layout.fillWidth: true
+            spacing: Style.space(8)
+
+            Repeater {
+              model: Model.simulateButtons()
+
+              delegate: BorderSurface {
+                Layout.fillWidth: true
+                implicitHeight: Style.space(44)
+                radius: Style.cornerRadius
+                color: simArea.containsMouse ? Style.selectedFillFor(root.foreground, root.accent) : "transparent"
+                borderSpec: Border.controlSpec(simArea.containsMouse ? "hover-cursor" : "normal", root.foreground, root.accent)
+
+                Text {
+                  anchors.centerIn: parent
+                  text: modelData.label
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+
+                MouseArea {
+                  id: simArea
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.simulateButton(modelData.value)
+                }
+              }
+            }
+          }
+
+          PanelSeparator {
+            Layout.fillWidth: true
           }
 
           // Interactive Testing Box
