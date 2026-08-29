@@ -1,5 +1,7 @@
 # Mouse & Pointer Settings (`meviusisback.mouse-settings`)
 
+![](infographic.png)
+
 [![Omarchy Plugin](https://img.shields.io/badge/Omarchy-Plugin-blue?style=flat-square)](https://omarchy.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Hyprland Ready](https://img.shields.io/badge/Hyprland-Native-teal?style=flat-square)](https://hyprland.org)
