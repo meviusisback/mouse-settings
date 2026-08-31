@@ -254,7 +254,7 @@ def read_saved_input_settings():
             follow_match = re.search(r"follow_mouse\s*=\s*([0-9]+)", block)
             if follow_match:
                 settings["follow_mouse"] = validate_int(follow_match.group(1), 1, 0, 3)
-            natural_match = re.search(r"natural_scroll\s*=\s*(true|false)", block)
+            natural_match = re.search(r"natural_scroll\s*=\s*(true|false)\s*,", block)
             if natural_match:
                 settings["natural_scroll"] = (natural_match.group(1) == "true")
             left_match = re.search(r"left_handed\s*=\s*(true|false)", block)
@@ -327,9 +327,9 @@ def get_current_status():
     follow_mouse = validate_int(follow_mouse, 1, 0, 3)
 
     # Hyprland keeps the global mouse and touchpad natural-scroll settings
-    # separate.  The plugin exposes one combined toggle, so use the touchpad
-    # value as the fallback and apply the setting to both input paths below.
-    natural_scroll = saved_input.get("natural_scroll", get_hypr_option("input:touchpad:natural_scroll"))
+    # separate.  The plugin exposes one combined toggle, so read the global
+    # value as the canonical source and apply the setting to both input paths below.
+    natural_scroll = saved_input.get("natural_scroll", get_hypr_option("input:natural_scroll"))
     natural_scroll = validate_bool(natural_scroll, False)
 
     left_handed = saved_input.get("left_handed", get_hypr_option("input:left_handed"))
