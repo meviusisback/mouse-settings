@@ -226,6 +226,9 @@ The plugin is engineered specifically to prevent configuration corruption, race 
      accel_profile = "flat",
      follow_mouse = 1,
      natural_scroll = false,
+     touchpad = {
+       natural_scroll = false,
+     },
      left_handed = false,
      scroll_factor = 1.0,
      mouse_refocus = true,

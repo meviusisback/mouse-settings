@@ -326,7 +326,10 @@ def get_current_status():
     follow_mouse = saved_input.get("follow_mouse", get_hypr_option("input:follow_mouse"))
     follow_mouse = validate_int(follow_mouse, 1, 0, 3)
 
-    natural_scroll = saved_input.get("natural_scroll", get_hypr_option("input:natural_scroll"))
+    # Hyprland keeps the global mouse and touchpad natural-scroll settings
+    # separate.  The plugin exposes one combined toggle, so use the touchpad
+    # value as the fallback and apply the setting to both input paths below.
+    natural_scroll = saved_input.get("natural_scroll", get_hypr_option("input:touchpad:natural_scroll"))
     natural_scroll = validate_bool(natural_scroll, False)
 
     left_handed = saved_input.get("left_handed", get_hypr_option("input:left_handed"))
@@ -373,6 +376,7 @@ def apply_hypr_eval(settings) -> bool:
         f"accel_profile = {accel_lua}, "
         f"follow_mouse = {follow_mouse}, "
         f"natural_scroll = {natural_scroll}, "
+        f"touchpad = {{ natural_scroll = {natural_scroll} }}, "
         f"left_handed = {left_handed}, "
         f"scroll_factor = {scroll_factor:.2f}, "
         f"mouse_refocus = {mouse_refocus} "
@@ -412,6 +416,9 @@ def persist_to_input_lua(settings) -> bool:
         f"    accel_profile = {accel_lua},\n"
         f"    follow_mouse = {follow_mouse},\n"
         f"    natural_scroll = {natural_scroll},\n"
+        f"    touchpad = {{\n"
+        f"      natural_scroll = {natural_scroll},\n"
+        f"    }},\n"
         f"    left_handed = {left_handed},\n"
         f"    scroll_factor = {scroll_factor:.2f},\n"
         f"    mouse_refocus = {mouse_refocus},\n"

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "meviusisback.mouse-settings",
   "name": "Mouse & Pointer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "meviusisback",
   "license": "MIT",
   "description": "Graphical mouse & pointer configuration tool for Omarchy: cursor speed, precision/flat acceleration, natural scroll, left-handed mode, button remapping, synthetic button presses (ydotool), and mouse battery display.",
