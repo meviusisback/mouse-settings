@@ -144,19 +144,11 @@ Install and enable with a single command:
 omarchy plugin add https://github.com/meviusisback/mouse-settings --enable
 ```
 
-### Manual Installation
+### Button Simulation Prerequisite (Optional)
 
-Prerequisite for button simulation:
+Synthetic button simulation relies on the user-space `ydotool` daemon (`ydotoold`). To use synthetic button events, ensure the `ydotool` package is installed on your system and its user service daemon is active.
 
-```bash
-sudo pacman -S ydotool
-systemctl --user enable --now ydotool.service
-```
-
-Not required for core settings — the plugin manager command above works from any git URL and
-handles updates via `omarchy plugin update`. Cloning by hand into
-`~/.config/omarchy/plugins/` is discouraged: it skips manifest-managed
-lifecycle and will not be tracked for updates.
+Not required for core settings — the plugin manager command above works from any git URL and handles updates via `omarchy plugin update`. Cloning by hand into `~/.config/omarchy/plugins/` is discouraged: it skips manifest-managed lifecycle and will not be tracked for updates.
 
 ---
 
