@@ -129,7 +129,12 @@ def validate_bool(val, default: bool) -> bool:
     if isinstance(val, bool):
         return val
     if isinstance(val, str):
-        return val.lower() in ("true", "1", "yes")
+        low = val.lower()
+        if low in ("true", "1", "yes"):
+            return True
+        if low in ("false", "0", "no"):
+            return False
+        return default
     if isinstance(val, (int, float)):
         return bool(val)
     return default
@@ -147,6 +152,10 @@ def validate_button_mapping(button: str, action: str) -> str:
     if str(action) in allowed:
         return str(action)
     return default
+
+def validate_scroll_method(val) -> str:
+    """Allow only Hyprland's supported scroll methods (empty means device default)."""
+    return val if val in ("", "2fg", "edge", "on_button_down", "no_scroll") else ""
 
 def run_cmd(cmd):
     """Run a shell command safely using list argv (never shell=True)."""
@@ -263,6 +272,15 @@ def read_saved_input_settings():
             scroll_match = re.search(r"scroll_factor\s*=\s*([-+]?[0-9]*\.?[0-9]+)", block)
             if scroll_match:
                 settings["scroll_factor"] = validate_float(scroll_match.group(1), 1.0, 0.1, 8.0)
+            method_match = re.search(r'scroll_method\s*=\s*"([^"]*)"', block)
+            button_match = re.search(r"scroll_button\s*=\s*([0-9]+)", block)
+            lock_match = re.search(r"scroll_button_lock\s*=\s*(true|false)", block)
+            if method_match:
+                settings["scroll_method"] = validate_scroll_method(method_match.group(1))
+            if button_match:
+                settings["scroll_button"] = validate_int(button_match.group(1), 0, 0, 65535)
+            if lock_match:
+                settings["scroll_button_lock"] = (lock_match.group(1) == "true")
             refocus_match = re.search(r"mouse_refocus\s*=\s*(true|false)", block)
             if refocus_match:
                 settings["mouse_refocus"] = (refocus_match.group(1) == "true")
@@ -338,6 +356,11 @@ def get_current_status():
     scroll_factor = saved_input.get("scroll_factor", get_hypr_option("input:scroll_factor"))
     scroll_factor = validate_float(scroll_factor, 1.0, 0.1, 8.0)
 
+    # Keep the underlying values so unrelated saves preserve custom scrolling.
+    scroll_method = validate_scroll_method(saved_input.get("scroll_method", get_hypr_option("input:scroll_method")))
+    scroll_button = validate_int(saved_input.get("scroll_button", get_hypr_option("input:scroll_button")), 0, 0, 65535)
+    scroll_button_lock = validate_bool(saved_input.get("scroll_button_lock", get_hypr_option("input:scroll_button_lock")), False)
+
     mouse_refocus = saved_input.get("mouse_refocus", get_hypr_option("input:mouse_refocus"))
     mouse_refocus = validate_bool(mouse_refocus, True)
 
@@ -349,13 +372,17 @@ def get_current_status():
         "primaryDevice": devices[0]["name"] if devices else "Standard Mouse",
         "battery": get_battery(devices[0]["name"] if devices else ""),
         "accel_profile": accel_profile,
+        "sensitivity": sensitivity,
         "is_flat": (accel_profile == "flat"),
         "follow_mouse": follow_mouse,
         "natural_scroll": natural_scroll,
         "left_handed": left_handed,
         "scroll_factor": scroll_factor,
+        "scroll_method": scroll_method,
+        "scroll_button": scroll_button,
+        "scroll_button_lock": scroll_button_lock,
+        "middle_drag_scroll": scroll_method == "on_button_down" and scroll_button == 274 and not scroll_button_lock,
         "mouse_refocus": mouse_refocus,
-        "battery": get_battery(),
         "button_mappings": button_mappings
     }
 
@@ -369,6 +396,9 @@ def apply_hypr_eval(settings) -> bool:
     left_handed = "true" if validate_bool(settings.get("left_handed"), False) else "false"
     scroll_factor = validate_float(settings.get("scroll_factor"), 1.0, 0.1, 8.0)
     mouse_refocus = "true" if validate_bool(settings.get("mouse_refocus"), True) else "false"
+    scroll_method = validate_scroll_method(settings.get("scroll_method"))
+    scroll_button = validate_int(settings.get("scroll_button"), 0, 0, 65535)
+    scroll_button_lock = "true" if validate_bool(settings.get("scroll_button_lock"), False) else "false"
 
     lua_cmd = (
         f"hl.config({{ input = {{ "
@@ -379,6 +409,9 @@ def apply_hypr_eval(settings) -> bool:
         f"touchpad = {{ natural_scroll = {natural_scroll} }}, "
         f"left_handed = {left_handed}, "
         f"scroll_factor = {scroll_factor:.2f}, "
+        f'scroll_method = "{scroll_method}", '
+        f"scroll_button = {scroll_button}, "
+        f"scroll_button_lock = {scroll_button_lock}, "
         f"mouse_refocus = {mouse_refocus} "
         f"}} }})"
     )
@@ -407,6 +440,9 @@ def persist_to_input_lua(settings) -> bool:
     left_handed = "true" if validate_bool(settings.get("left_handed"), False) else "false"
     scroll_factor = validate_float(settings.get("scroll_factor"), 1.0, 0.1, 8.0)
     mouse_refocus = "true" if validate_bool(settings.get("mouse_refocus"), True) else "false"
+    scroll_method = validate_scroll_method(settings.get("scroll_method"))
+    scroll_button = validate_int(settings.get("scroll_button"), 0, 0, 65535)
+    scroll_button_lock = "true" if validate_bool(settings.get("scroll_button_lock"), False) else "false"
 
     new_block = (
         f"{START_MARKER}\n"
@@ -421,6 +457,9 @@ def persist_to_input_lua(settings) -> bool:
         f"    }},\n"
         f"    left_handed = {left_handed},\n"
         f"    scroll_factor = {scroll_factor:.2f},\n"
+        f'    scroll_method = "{scroll_method}",\n'
+        f"    scroll_button = {scroll_button},\n"
+        f"    scroll_button_lock = {scroll_button_lock},\n"
         f"    mouse_refocus = {mouse_refocus},\n"
         f"  }},\n"
         f"}})\n"
@@ -604,6 +643,9 @@ def main():
                 "natural_scroll": False,
                 "left_handed": False,
                 "scroll_factor": 1.0,
+                "scroll_method": "",
+                "scroll_button": 0,
+                "scroll_button_lock": False,
                 "mouse_refocus": True,
             }
             eval_ok = apply_hypr_eval(defaults)
@@ -646,6 +688,16 @@ def main():
                         has_input_change = True
                     if "scroll_factor" in payload:
                         current["scroll_factor"] = validate_float(payload["scroll_factor"], current["scroll_factor"], 0.1, 8.0)
+                        has_input_change = True
+                    if "middle_drag_scroll" in payload:
+                        enabled = validate_bool(payload["middle_drag_scroll"], current["middle_drag_scroll"])
+                        if enabled:
+                            current["scroll_method"] = "on_button_down"
+                            current["scroll_button"] = 274
+                            current["scroll_button_lock"] = False
+                        else:
+                            current["scroll_method"] = ""
+                            current["scroll_button"] = 0
                         has_input_change = True
                     if "mouse_refocus" in payload:
                         current["mouse_refocus"] = validate_bool(payload["mouse_refocus"], current["mouse_refocus"])

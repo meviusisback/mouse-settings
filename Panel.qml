@@ -32,6 +32,7 @@ Panel {
     natural_scroll: false,
     left_handed: false,
     scroll_factor: 1.0,
+    middle_drag_scroll: false,
     mouse_refocus: true,
     button_mappings: {
       side_back: "default",
@@ -618,6 +619,15 @@ Panel {
             description: "Wheel down scrolls content down (touchpad/macOS style)"
             checked: root.status.natural_scroll
             onClicked: root.applySettings({ natural_scroll: !root.status.natural_scroll })
+          }
+
+          Toggle {
+            Layout.fillWidth: true
+            label: "Middle-Click Drag to Scroll"
+            description: "Hold the middle button and move the mouse to scroll"
+            checked: root.status.middle_drag_scroll === true
+            enabled: !root.isSaving
+            onClicked: root.applySettings({ middle_drag_scroll: !root.status.middle_drag_scroll })
           }
 
           // Scroll Speed Slider
