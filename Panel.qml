@@ -57,16 +57,18 @@ Panel {
   // enumerated, so a malformed one (a "__proto__" key, a field we have no default for)
   // cannot reach the merged object at all.
   function normalizeStatus(data) {
+    var keys = Model.ownKeys(root.defaultStatus)
     var merged = {}
-    for (var k in root.defaultStatus) merged[k] = root.defaultStatus[k]
-    if (!data || typeof data !== "object" || Array.isArray(data)) return merged
-    for (var key in root.defaultStatus) {
-      var value = data[key]
-      if (value !== undefined && value !== null) merged[key] = value
+    for (var i = 0; i < keys.length; i++) merged[keys[i]] = root.defaultStatus[keys[i]]
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      for (var j = 0; j < keys.length; j++) {
+        var value = data[keys[j]]
+        if (value !== undefined && value !== null) merged[keys[j]] = value
+      }
     }
-    // Fresh containers every poll: the defaults are a constant literal, so a shared
-    // reference would let a future in-place mutation of `status` poison them for the
-    // rest of the session, and a partial mapping object would leave `undefined` in the
+    // Fresh containers on every call, payload or not: the defaults are a constant literal,
+    // so a shared reference would let a future in-place mutation of `status` poison them for
+    // the rest of the session, and a partial mapping object would leave `undefined` in the
     // three Dropdown `value:` bindings.
     merged.devices = Array.isArray(merged.devices) ? merged.devices.slice() : []
     merged.button_mappings = Model.normalizeMappings(merged.button_mappings, root.defaultStatus.button_mappings)

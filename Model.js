@@ -23,20 +23,32 @@ function numberOr(value, fallback) {
 function boolOr(value, fallback) {
   if (value === true || value === false) return value
   if (value === 1 || value === 0) return value === 1
-  if (value === "true") return true
-  if (value === "false") return false
+  if (value === "true" || value === "1") return true
+  if (value === "false" || value === "0") return false
   return fallback
+}
+
+// Own enumerable keys only. A `for (var k in obj)` loop also walks inherited enumerable
+// keys, so if anything else in the shell has polluted Object.prototype the merge would start
+// adopting keys the widget never declared — the exact door this allowlist exists to close.
+function ownKeys(obj) {
+  var keys = []
+  for (var k in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, k)) keys.push(k)
+  }
+  return keys
 }
 
 // Copy a button_mappings payload onto the declared defaults, keeping only keys the widget
 // knows and only non-empty string values. Always returns a fresh object.
 function normalizeMappings(mappings, defaults) {
+  var keys = ownKeys(defaults)
   var out = {}
-  for (var k in defaults) out[k] = defaults[k]
+  for (var i = 0; i < keys.length; i++) out[keys[i]] = defaults[keys[i]]
   if (!mappings || typeof mappings !== "object" || Array.isArray(mappings)) return out
-  for (var key in defaults) {
-    var v = mappings[key]
-    if (typeof v === "string" && v !== "") out[key] = v
+  for (var j = 0; j < keys.length; j++) {
+    var v = mappings[keys[j]]
+    if (typeof v === "string" && v !== "") out[keys[j]] = v
   }
   return out
 }
