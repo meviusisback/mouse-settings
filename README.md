@@ -243,6 +243,11 @@ The plugin is engineered specifically to prevent configuration corruption, race 
    - Subprocesses are spawned using list arguments (`shell=False`) to eliminate shell injection risks.
 6. **UI Debounce & Sanitization**:
    Rapid hardware toggle actions are rate-limited via client-side debouncing, and all dynamic strings are bound using `Text.PlainText`.
+7. **Resilient Status Contract**:
+   The widget polls `mouse_ctl.py status` every 3 seconds and merges each payload onto the defaults declared in `Panel.qml` (`defaultStatus`), coercing the numeric and boolean fields and rebuilding `button_mappings` key by key. Only fields the widget declares are adopted, so a missing, mistyped or unknown field degrades to a sane default instead of being assigned to a typed property as `undefined` — which is what used to flood the journal with `Unable to assign [undefined] to double` once per poll. `tests/test_status_contract.py` fails if the CLI drops a key the widget reads:
+   ```bash
+   python3 -m unittest discover -s tests -v
+   ```
 
 ---
 
@@ -252,6 +257,7 @@ The plugin is engineered specifically to prevent configuration corruption, race 
 - `Panel.qml`: Main graphical interface, top bar widget, tab navigation, slider controls, and IPC handlers.
 - `Model.js`: Pure helper functions for formatting labels, tooltip strings, and option lists.
 - `mouse_ctl.py`: Backend controller executing Hyprland runtime evaluation, Lua persistence, atomic file I/O, and notifications.
+- `tests/test_status_contract.py`: Regression suite for the widget ↔ CLI status contract.
 - `~/.config/hypr/input.lua`: Target configuration file storing mouse input settings.
 - `~/.config/hypr/bindings.lua`: Target configuration file storing button and modifier bindings.
 

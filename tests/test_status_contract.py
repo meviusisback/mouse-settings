@@ -29,7 +29,13 @@ CLI = REPO / "mouse_ctl.py"
 # Fields the widget binds to a typed property: `value:` is a double, `checked:`/`active:`
 # is a bool. A wrong type here is exactly what spams the journal.
 NUMERIC_FIELDS = ("sensitivity", "scroll_factor", "follow_mouse")
-BOOL_FIELDS = ("is_flat", "natural_scroll", "left_handed", "mouse_refocus", "middle_drag_scroll")
+BOOL_FIELDS = (
+    "is_flat",
+    "natural_scroll",
+    "left_handed",
+    "mouse_refocus",
+    "middle_drag_scroll",
+)
 
 # Nested keys of the button_mappings object the widget reads (Model.js option lists).
 BUTTON_MAPPING_KEYS = (

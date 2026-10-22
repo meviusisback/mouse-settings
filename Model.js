@@ -9,16 +9,36 @@ function formatSpeed(sensitivity) {
 
 // Coercion helpers: the panel merges every polled status payload onto its defaults so a
 // missing or mistyped field can never reach a typed QML property as `undefined`.
+// Number() accepts "" / [] / whitespace as 0, so only real numbers and non-empty numeric
+// strings are accepted here — everything else falls back to the declared default.
 function numberOr(value, fallback) {
-  var n = Number(value)
-  return isFinite(n) ? n : fallback
+  if (typeof value === "number") return isFinite(value) ? value : fallback
+  if (typeof value === "string" && value.trim() !== "") {
+    var n = Number(value)
+    return isFinite(n) ? n : fallback
+  }
+  return fallback
 }
 
 function boolOr(value, fallback) {
   if (value === true || value === false) return value
+  if (value === 1 || value === 0) return value === 1
   if (value === "true") return true
   if (value === "false") return false
   return fallback
+}
+
+// Copy a button_mappings payload onto the declared defaults, keeping only keys the widget
+// knows and only non-empty string values. Always returns a fresh object.
+function normalizeMappings(mappings, defaults) {
+  var out = {}
+  for (var k in defaults) out[k] = defaults[k]
+  if (!mappings || typeof mappings !== "object" || Array.isArray(mappings)) return out
+  for (var key in defaults) {
+    var v = mappings[key]
+    if (typeof v === "string" && v !== "") out[key] = v
+  }
+  return out
 }
 
 function formatScrollSpeed(factor) {

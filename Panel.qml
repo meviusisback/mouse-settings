@@ -29,6 +29,7 @@ Panel {
   readonly property var defaultStatus: ({
     devices: [],
     primaryDevice: "Standard Mouse",
+    battery: null,
     sensitivity: 0.0,
     accel_profile: "adaptive",
     is_flat: false,
@@ -52,13 +53,23 @@ Panel {
 
   // Merge a polled payload onto the defaults so a partial or stale payload degrades to the
   // previous behaviour (sane defaults) instead of feeding `undefined` to a typed binding.
+  // Only keys the widget declares are adopted — the payload's own key set is never
+  // enumerated, so a malformed one (a "__proto__" key, a field we have no default for)
+  // cannot reach the merged object at all.
   function normalizeStatus(data) {
     var merged = {}
     for (var k in root.defaultStatus) merged[k] = root.defaultStatus[k]
-    if (!data || typeof data !== "object") return merged
-    for (var key in data) {
-      if (data[key] !== undefined && data[key] !== null) merged[key] = data[key]
+    if (!data || typeof data !== "object" || Array.isArray(data)) return merged
+    for (var key in root.defaultStatus) {
+      var value = data[key]
+      if (value !== undefined && value !== null) merged[key] = value
     }
+    // Fresh containers every poll: the defaults are a constant literal, so a shared
+    // reference would let a future in-place mutation of `status` poison them for the
+    // rest of the session, and a partial mapping object would leave `undefined` in the
+    // three Dropdown `value:` bindings.
+    merged.devices = Array.isArray(merged.devices) ? merged.devices.slice() : []
+    merged.button_mappings = Model.normalizeMappings(merged.button_mappings, root.defaultStatus.button_mappings)
     merged.sensitivity = Model.numberOr(merged.sensitivity, root.defaultStatus.sensitivity)
     merged.scroll_factor = Model.numberOr(merged.scroll_factor, root.defaultStatus.scroll_factor)
     merged.follow_mouse = Model.numberOr(merged.follow_mouse, root.defaultStatus.follow_mouse)
@@ -66,6 +77,7 @@ Panel {
     merged.natural_scroll = Model.boolOr(merged.natural_scroll, root.defaultStatus.natural_scroll)
     merged.left_handed = Model.boolOr(merged.left_handed, root.defaultStatus.left_handed)
     merged.mouse_refocus = Model.boolOr(merged.mouse_refocus, root.defaultStatus.mouse_refocus)
+    merged.middle_drag_scroll = Model.boolOr(merged.middle_drag_scroll, root.defaultStatus.middle_drag_scroll)
     return merged
   }
 
