@@ -22,7 +22,11 @@ Panel {
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
   readonly property color accent: Color.accent
 
-  property var status: ({
+  // Single source of truth for the shape of `status`. The bar polls the CLI every 3 s and
+  // assigns the whole parsed payload; a payload that is missing a key used to put `undefined`
+  // straight into a typed property (e.g. the cursor speed slider's `value`), which made the
+  // shell log "Unable to assign [undefined] to double" on every poll and flood the journal.
+  readonly property var defaultStatus: ({
     devices: [],
     primaryDevice: "Standard Mouse",
     sensitivity: 0.0,
@@ -43,6 +47,27 @@ Panel {
       super_wheel: "workspace_scroll"
     }
   })
+
+  property var status: root.defaultStatus
+
+  // Merge a polled payload onto the defaults so a partial or stale payload degrades to the
+  // previous behaviour (sane defaults) instead of feeding `undefined` to a typed binding.
+  function normalizeStatus(data) {
+    var merged = {}
+    for (var k in root.defaultStatus) merged[k] = root.defaultStatus[k]
+    if (!data || typeof data !== "object") return merged
+    for (var key in data) {
+      if (data[key] !== undefined && data[key] !== null) merged[key] = data[key]
+    }
+    merged.sensitivity = Model.numberOr(merged.sensitivity, root.defaultStatus.sensitivity)
+    merged.scroll_factor = Model.numberOr(merged.scroll_factor, root.defaultStatus.scroll_factor)
+    merged.follow_mouse = Model.numberOr(merged.follow_mouse, root.defaultStatus.follow_mouse)
+    merged.is_flat = Model.boolOr(merged.is_flat, root.defaultStatus.is_flat)
+    merged.natural_scroll = Model.boolOr(merged.natural_scroll, root.defaultStatus.natural_scroll)
+    merged.left_handed = Model.boolOr(merged.left_handed, root.defaultStatus.left_handed)
+    merged.mouse_refocus = Model.boolOr(merged.mouse_refocus, root.defaultStatus.mouse_refocus)
+    return merged
+  }
 
   property string activeTab: "motion" // "motion" | "scrolling" | "buttons"
   property bool isSaving: false
@@ -144,7 +169,7 @@ Panel {
         var output = text || ""
         try {
           var data = JSON.parse(output)
-          root.status = data
+          root.status = root.normalizeStatus(data)
         } catch (e) {
           // ignore transient parse error
         }

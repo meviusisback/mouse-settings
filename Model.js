@@ -1,10 +1,24 @@
 // Helper functions for formatting labels, tooltip texts, and settings conversions.
 
 function formatSpeed(sensitivity) {
-  var s = Number(sensitivity) || 0
+  var s = numberOr(sensitivity, 0)
   if (Math.abs(s) < 0.05) return "Standard (1.0x)"
   if (s > 0) return "Fast (" + (1.0 + s).toFixed(2) + "x)"
   return "Slow (" + (1.0 + s).toFixed(2) + "x)"
+}
+
+// Coercion helpers: the panel merges every polled status payload onto its defaults so a
+// missing or mistyped field can never reach a typed QML property as `undefined`.
+function numberOr(value, fallback) {
+  var n = Number(value)
+  return isFinite(n) ? n : fallback
+}
+
+function boolOr(value, fallback) {
+  if (value === true || value === false) return value
+  if (value === "true") return true
+  if (value === "false") return false
+  return fallback
 }
 
 function formatScrollSpeed(factor) {
