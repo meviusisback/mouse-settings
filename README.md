@@ -1,189 +1,63 @@
-# Mouse & Pointer Settings (`meviusisback.mouse-settings`)
+<div align="center">
 
-![](infographic.png)
+# Mouse & Pointer Settings
 
-[![Omarchy Plugin](https://img.shields.io/badge/Omarchy-Plugin-blue?style=flat-square)](https://omarchy.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Hyprland Ready](https://img.shields.io/badge/Hyprland-Native-teal?style=flat-square)](https://hyprland.org)
+**A graphical mouse and pointer configuration tool for Omarchy: cursor speed, one-click precision mode, scroll behavior, button remapping, synthetic button presses and live input testing — applied instantly to Hyprland.**
 
-A modern, secure, and intuitive graphical mouse and pointer configuration tool for [Omarchy Linux](https://omarchy.org). Adjust cursor speed, toggle between 1:1 precision and adaptive acceleration, customize scroll behavior, remap extra mouse buttons, simulate button presses, and test input events in real time—all with instant Hyprland application and zero config breakage.
+[![License: MIT](https://img.shields.io/github/license/meviusisback/mouse-settings)](LICENSE)
+![Linux](https://img.shields.io/badge/linux-supported-1793d1)
 
+![Mouse and pointer settings panel](preview.png)
+![Mouse settings feature overview](infographic.png)
 
-<p align="center">
-  <img src="preview.png" alt="Mouse & Pointer Settings" width="380">
-</p>
----
+</div>
 
-## 📑 Table of Contents
+## Why
 
-- [✨ Key Features](#-key-features)
-- [🖥️ UI & Feature Walkthrough](#️-ui--feature-walkthrough)
-  - [Top Bar Widget](#top-bar-widget)
-  - [Motion & Pointer Dynamics](#motion--pointer-dynamics)
-  - [Scrolling & Focus Behavior](#scrolling--focus-behavior)
-  - [Mouse Button Remapping](#mouse-button-remapping)
-  - [Interactive Testing Canvas](#interactive-testing-canvas)
-- [📦 Installation](#-installation)
-- [⌨️ IPC & CLI Integration](#️-ipc--cli-integration)
-- [🔒 Security & Architecture](#-security--architecture)
-- [📁 Configuration & Files](#-configuration--files)
-- [📜 License](#-license)
+Mouse feel lives in Hyprland config files most people never want to hand-edit — sensitivity curves, scroll multipliers, side-button binds. This plugin turns all of it into sliders, cards and dropdowns: tune the pointer until it feels right, remap the extra buttons to things you actually use, and test every input live, with changes applying instantly and your manual config left alone.
 
----
+## Features
 
-## ✨ Key Features
+- **Zero restart required** — changes apply instantly to Hyprland via runtime evaluation and persist across reboots.
+- **One-click precision mode** — switch instantly between raw 1:1 flat input (gaming, CAD, pixel work) and dynamic acceleration, via the panel cards, a right-click on the top bar icon, or IPC.
+- **Customizable button remapping** — rebind side buttons and middle click to productivity actions (workspace switching, terminal launch, window management, move/resize, …); Super + drag and Super + wheel gestures configurable too.
+- **Multiplier & natural scrolling** — scroll sensitivity from `0.2x` to `8.0x`, plus natural (touchpad/macOS-style) direction toggle.
+- **Middle-button drag to scroll** — hold the middle button and move the mouse to scroll; applies immediately and persists across logins. While active, the middle button is reserved for drag-scrolling (middle-click paste/close-tab won't fire); Reset Defaults disables it.
+- **Enterprise-grade reliability** — atomic writes (`os.replace` + `fsync`), POSIX concurrency locks (`fcntl.flock`), symlink-attack mitigation, strict parameter allowlists.
+- **Live input verification** — interactive test canvas confirms button presses, side keys and scroll direction immediately.
+- **Simulate any button press** — emit real synthetic presses of Left, Right, Middle (274), Side Back (275) or Side Forward (276) from the Buttons tab or the CLI, to test remaps and Hyprland binds without the physical buttons (powered by `ydotool`).
+- **Mouse battery indicator** — remaining percentage of your wireless mouse in the panel header and tooltip (via `upower`); hidden automatically when the mouse reports no battery.
+- **Smart device detection** — identifies your actual mouse even when keyboards and virtual devices appear in Hyprland's pointer list.
 
-- **⚡ Zero Restart Required**: Changes apply instantly to Hyprland via runtime evaluation and persist reliably across reboots.
-- **🎯 One-Click Precision Mode**: Switch instantly between raw 1:1 flat input (ideal for gaming & design) and dynamic acceleration with a right-click on the top bar or via IPC.
-- **🔘 Customizable Button Remapping**: Rebind physical mouse buttons (Side Btn 1, Side Btn 2, Middle Click) to productivity actions like workspace switching, terminal launch, or window management.
-- **📜 Multiplier & Natural Scrolling**: Adjust scroll sensitivity up to 8.0x and toggle natural (touchpad/macOS-style) direction.
-- **🛡️ Enterprise-Grade Reliability**: Built with atomic writes (`os.replace` + `fsync`), POSIX concurrency file locks (`fcntl.flock`), symlink attack prevention, and strict parameter allowlists.
-- **🧪 Live Input Verification**: Built-in interactive test canvas confirms button presses, side keys, and scroll directions immediately.
-- **🖱️ Simulate Any Button Press**: Emit real synthetic presses of Left, Right, Middle (274), Side Bck (275), or Side Fwd (276) from the Buttons tab or the CLI — test button remaps and Hyprland binds without having the physical buttons (powered by `ydotool`).
-- **🔋 Mouse Battery Indicator**: Shows the remaining battery percentage of your wireless mouse in the panel header and tooltip (via `upower`) — automatically hidden when the mouse does not report a battery, and never confused with other peripherals' batteries.
-- **🎯 Smart Device Detection**: Identifies your actual mouse even when keyboards and virtual devices appear in Hyprland's pointer list.
-
----
-
-## 🖥️ UI & Feature Walkthrough
-
-```
-┌────────────────────────────────────────────────────────┐
-│  󰍽  Mouse & Pointer                      󰒓 [Config]    │
-│     Razer DeathAdder V2 · Precision (1:1) · Standard   │
-├────────────────────────────────────────────────────────┤
-│   [ 󰍽 Motion ]       [ 󱕒 Scrolling ]      [ 󰒋 Buttons ] │
-├────────────────────────────────────────────────────────┤
-│  Cursor Speed: Fast (1.25x)                            │
-│  🐢 ─────────────●──────────── 🚀                     │
-│                                                        │
-│  Pointer Movement Style                                │
-│  ┌────────────────────────┐  ┌──────────────────────┐  │
-│  │ 󰓅 Precision (1:1)      │  │ 📈 Dynamic (Adaptive)│  │
-│  │ Gaming & Precision Work│  │ Smooth Desktop Curve │  │
-│  └────────────────────────┘  └──────────────────────┘  │
-│                                                        │
-│  [X] Left-Handed Mode (Swap Left/Right Click)          │
-├────────────────────────────────────────────────────────┤
-│  [ 󰁯 Reset Defaults ]               ✓ Live in Hyprland │
-└────────────────────────────────────────────────────────┘
-```
-
-### Top Bar Widget
-
-- **Status Icon (`󰍽`)**: Clean visual indicator in your Omarchy top bar. Highlights when **Precision Mode (Flat)** is active.
-- **Rich Tooltip**: Hovering reveals the primary device name, active acceleration profile, and current speed multiplier (e.g. `Logitech G502 · Precision (1:1) · Fast (1.20x)`).
-- **Left-Click**: Toggles the interactive settings card.
-- **Right-Click Fast Toggle**: Instantly flips between **Precision (Flat 1:1)** and **Dynamic (Adaptive)** acceleration, broadcasting desktop notifications.
-
----
-
-### Motion & Pointer Dynamics
-
-1. **Cursor Speed Slider**:
-   - Fine-grained range from `-1.0` (Slow / 0.0x) to `+1.0` (Fast / 2.0x) with step increments of `0.05`.
-   - Labeled with emoji guides (`🐢` Slow to `🚀` Fast) and formatted multiplier labels (`Standard (1.0x)`, `Fast (1.30x)`, `Slow (0.75x)`).
-2. **Movement Profile Cards**:
-   - **Precision (1:1 / Flat)**: Disables software acceleration curve. Every count of physical mouse movement translates to a fixed pixel distance. Essential for competitive gaming, CAD, and precision pixel work.
-   - **Dynamic (Adaptive)**: Standard OS curve that accelerates pointer velocity during fast swipes while preserving pinpoint control during slow movements.
-3. **Left-Handed Mode**:
-   - Swaps primary and secondary physical buttons (`left_handed = true` in Hyprland) for comfortable southpaw usage.
-
----
-
-### Scrolling & Focus Behavior
-
-1. **Natural (Mobile) Scrolling**:
-   - When enabled, moving the wheel downward scrolls content downward (matching touchscreens and macOS touchpads).
-   - When disabled, uses traditional PC wheel scrolling.
-2. **Scroll Speed Multiplier**:
-   - Adjusts scroll step sensitivity from `0.2x` (`🐌`) up to `8.0x` (`⚡`) in `0.2` increments.
-   - Boosts navigation speed on high-resolution displays or long documents.
-3. **Focus Follows Cursor**:
-   - Automatically activates window focus as the pointer hovers over different client surfaces.
-4. **Auto-Refocus on App Close**:
-   - Automatically shifts focus to the window currently directly underneath the cursor when the active window is closed.
-5. **Middle-Click Drag to Scroll**:
-   - Hold the middle mouse button and move the mouse to scroll; release it to stop.
-   - Applies immediately and persists across logins. Disabling it stops motion-based scrolling; the wheel still works. Reset Defaults also disables it.
-   - Note: while active, the middle button is used exclusively for drag-scrolling; middle-click actions like paste or close-tab will not fire.
-
----
-
-### Mouse Button Remapping
-
-Easily customize non-standard physical buttons and gesture shortcuts:
-
-| Physical Button / Gesture | Linux Keycode / Event | Configurable Actions |
-| :--- | :--- | :--- |
-| **󰍽 Side Btn 1 (Bck)** | `mouse:275` | • **Browser Bck (Default)**<br>• **Prev Workspace** (`workspace, e-1`)<br>• **Omarchy Menu** (`exec, omarchy-menu`)<br>• **Focus Prev Window** (`movefocus, l`) |
-| **󰍽 Side Btn 2 (Fwd)** | `mouse:276` | • **Browser Fwd (Default)**<br>• **Next Workspace** (`workspace, e+1`)<br>• **Launch Terminal** (`exec, omarchy-terminal`)<br>• **Focus Next Window** (`movefocus, r`) |
-| **󰍽 Middle Btn (Wheel)** | `mouse:274` | • **Standard (Paste / Tab)** (Default pass-through)<br>• **Close Active Window** (`killactive`)<br>• **Toggle Floating** (`togglefloating`)<br>• **Toggle Fullscreen** (`fullscreen, 1`) |
-| **Super + Left Drag** | `SUPER + mouse:272` | • **Move Window** (`movewindow`) or **Disabled** |
-| **Super + Right Drag** | `SUPER + mouse:273` | • **Resize Window** (`resizewindow`) or **Disabled** |
-| **Super + Wheel Scroll** | `SUPER + mouse_up/down` | • **Switch Workspaces** (`workspace, e-1 / e+1`) or **Disabled** |
-
-Below the remapping dropdowns, the **Simulate Button Press** row offers five equal-width chips (`L`, `R`, `M`, `S1`, `S2`). Clicking one sends a synthetic press of that physical button via `ydotool` — it feeds a real input event into Hyprland, so remapped actions fire and the interactive testing canvas below reports the detection exactly as if you had pressed the hardware button. Requires the `ydotoold` daemon (see Installation).
-
-**Battery Indicator**: When your mouse reports a battery level over HID (most Logitech and newer wireless mice do), the remaining percentage appears next to the device name in the popup header and in the bar icon tooltip, sourced via `upower`. Mice whose firmware does not expose the HID battery page (many budget 2.4 GHz receivers) simply show no indicator.
-
----
-
-### Interactive Testing Canvas
-
-Located at the bottom of the Buttons tab, the interactive test box gives immediate feedback:
-- **Button Clicks**: Detects `Left Btn`, `Right Btn`, `Middle Btn (274)`, `Side Btn 1 (Bck / 275)`, and `Side Btn 2 (Fwd / 276)` alongside an incrementing click counter.
-- **Scroll Events**: Detects wheel direction (`Scrolled Up` / `Scrolled Down`) and reports raw angle deltas.
-- **Safe Sandboxing**: Uses QML `Text.PlainText` rendering to ensure hardware device names and event strings cannot execute rich text formatting or script injections.
-
----
-
-## 📦 Installation
-
-### Via Omarchy Plugin Manager (Recommended)
-
-Install and enable with a single command:
+## Install
 
 ```bash
 omarchy plugin add https://github.com/meviusisback/mouse-settings --enable
 ```
 
-### Button Simulation Prerequisite (Optional)
+**Button simulation (optional):** synthetic presses rely on the user-space `ydotool` daemon (`ydotoold`) — install the `ydotool` package and keep its user service active.
 
-Synthetic button simulation relies on the user-space `ydotool` daemon (`ydotoold`). To use synthetic button events, ensure the `ydotool` package is installed on your system and its user service daemon is active.
+## Usage
 
-Not required for core settings — the plugin manager command above works from any git URL and handles updates via `omarchy plugin update`. Cloning by hand into `~/.config/omarchy/plugins/` is discouraged: it skips manifest-managed lifecycle and will not be tracked for updates.
+Click the bar icon (`󰍽`, highlighted when Precision/Flat is active; tooltip shows device, profile and speed) to toggle the settings card; **right-click** flips instantly between Precision (Flat 1:1) and Dynamic acceleration.
 
----
-
-## ⌨️ IPC & CLI Integration
-
-The plugin exposes full IPC targets via `omarchy-shell` and a standalone Python helper for scripts, keybindings, and macro pads.
-
-### Omarchy Shell IPC
+Shell IPC:
 
 ```bash
-# Toggle settings popup open/close
-omarchy-shell meviusisback.mouse-settings toggle
-
-# Fast toggle Precision Mode (Flat 1:1) vs Dynamic
-omarchy-shell meviusisback.mouse-settings toggleAccel
-
-# Explicit open / close
+omarchy-shell meviusisback.mouse-settings toggle        # popup open/close
+omarchy-shell meviusisback.mouse-settings toggleAccel  # Precision vs Dynamic
 omarchy-shell meviusisback.mouse-settings open
 omarchy-shell meviusisback.mouse-settings close
 ```
 
-### Direct CLI Helper (`mouse_ctl.py`)
+Direct CLI helper (`mouse_ctl.py`):
 
 ```bash
-# Query full JSON state of mouse configuration
+# Full JSON state of the mouse configuration
 python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py status
 
-# Toggle acceleration profile directly
+# Toggle acceleration profile / natural scroll directly
 python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py toggle-accel
-
-# Toggle natural scroll direction
 python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py toggle-natural-scroll
 
 # Apply specific settings via JSON
@@ -206,57 +80,55 @@ python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py reset
 python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py simulate-button --button side_back   # left|right|middle|side_back|side_forward
 ```
 
----
+## Requirements
 
-## 🔒 Security & Architecture
+- Omarchy Linux with Hyprland (settings apply via runtime evaluation + `input.lua` / `bindings.lua`)
+- `python3` (standard library — backend controller, atomic file I/O, notifications)
+- `upower` — mouse battery indicator only
+- `ydotool` package + active `ydotoold` user service — synthetic button presses only
 
-The plugin is engineered specifically to prevent configuration corruption, race conditions, and injection vulnerabilities:
+## Configuration
 
-1. **Non-Destructive Scoped Markers**:
-   Settings are written exclusively inside dedicated, marked blocks in `~/.config/hypr/input.lua` and `~/.config/hypr/bindings.lua`. All user rules, comments, and manual configurations outside these marker blocks are completely preserved:
-   ```lua
-   -- [[ OMARCHY_MOUSE_SETTINGS_START ]]
-   -- Generated by meviusisback.mouse-settings plugin.
-   return {
-     sensitivity = 0.0,
-     accel_profile = "flat",
-     follow_mouse = 1,
-     natural_scroll = false,
-     touchpad = {
-       natural_scroll = false,
-     },
-     left_handed = false,
-     scroll_factor = 1.0,
-     mouse_refocus = true,
-   }
-   -- [[ OMARCHY_MOUSE_SETTINGS_END ]]
-   ```
-2. **Atomic Writes & Safe Replacement**:
-   Configuration files are written to unique temporary files in the same directory (`.tmp_*`), flushed and synchronized with `os.fsync()`, and moved into place via atomic `os.replace()`. This prevents zero-byte or corrupt files if a write is interrupted.
-3. **Concurrency Locking (`fcntl.flock`)**:
-   An exclusive file lock (`~/.config/hypr/.mouse_ctl.lock`) synchronizes all read-modify-write operations, preventing race conditions from simultaneous UI interactions or background scripts.
-4. **Symlink Attack Mitigation**:
-   Before updating a file, `safe_atomic_write` checks `is_symlink()`. If a symlink is present, it is unlinked rather than followed, guaranteeing that external target files cannot be overwritten.
-5. **Strict Input Validation & Bounding**:
-   - Floats (`sensitivity`, `scroll_factor`) are strictly verified to be finite numbers (`math.isnan` and `math.isinf` rejected) and clamped within safe ranges.
-   - Enums (`accel_profile`, `button_mappings`) are matched against strict compile-time allowlists.
-   - Subprocesses are spawned using list arguments (`shell=False`) to eliminate shell injection risks.
-6. **UI Debounce & Sanitization**:
-   Rapid hardware toggle actions are rate-limited via client-side debouncing, and all dynamic strings are bound using `Text.PlainText`.
+Settings persist inside dedicated marker blocks in `~/.config/hypr/input.lua` and `~/.config/hypr/bindings.lua` (`-- [[ OMARCHY_MOUSE_SETTINGS_START ]]` … `_END`); all rules, comments and manual configuration outside the blocks are preserved:
 
----
+```lua
+return {
+  sensitivity = 0.0,
+  accel_profile = "flat",
+  follow_mouse = 1,
+  natural_scroll = false,
+  touchpad = {
+    natural_scroll = false,
+  },
+  left_handed = false,
+  scroll_factor = 1.0,
+  mouse_refocus = true,
+}
+```
 
-## 📁 Configuration & Files
+| Key | Meaning |
+|---|---|
+| `sensitivity` | Cursor speed, `-1.0` (slow) to `+1.0` (fast), step `0.05` |
+| `accel_profile` | `flat` (Precision 1:1) or adaptive (Dynamic) |
+| `natural_scroll` | Natural / mobile scroll direction |
+| `scroll_factor` | Scroll step sensitivity, `0.2x`–`8.0x` |
+| `left_handed` | Swap left/right click |
+| `follow_mouse` | Focus follows cursor |
+| `mouse_refocus` | Refocus the window under the cursor when the active one closes |
+| `button_mappings` | `side_back`, `side_forward`, `middle_click` actions (prev/next workspace, Omarchy menu, terminal, focus move, move/resize window, …) |
 
-- `manifest.json`: Plugin registration, metadata, bar widget definition, and category bindings.
-- `Panel.qml`: Main graphical interface, top bar widget, tab navigation, slider controls, and IPC handlers.
-- `Model.js`: Pure helper functions for formatting labels, tooltip strings, and option lists.
-- `mouse_ctl.py`: Backend controller executing Hyprland runtime evaluation, Lua persistence, atomic file I/O, and notifications.
-- `~/.config/hypr/input.lua`: Target configuration file storing mouse input settings.
-- `~/.config/hypr/bindings.lua`: Target configuration file storing button and modifier bindings.
+Button event reference: `mouse:275` Side Back, `mouse:276` Side Forward, `mouse:274` Middle, `mouse:272/273` Super + drag, `mouse_up/down` Super + wheel.
 
----
+## How it works
 
-## 📜 License
+`mouse_ctl.py` is the backend: it applies settings to the live Hyprland session, persists them into the marker blocks with atomic writes (temp file + `fsync` + `os.replace`) under an exclusive file lock (`~/.config/hypr/.mouse_ctl.lock`), and refuses to follow symlinks. Floats are finiteness-checked and clamped, enums matched against allowlists, subprocesses spawned with argument vectors (no shell), and all dynamic strings render via QML `Text.PlainText`. `Panel.qml` is the interface (Motion / Scrolling / Buttons tabs, bar widget, test canvas); `Model.js` holds the label/tooltip formatting helpers.
 
-This project is licensed under the [MIT License](LICENSE).
+## Removal
+
+```bash
+omarchy plugin remove meviusisback.mouse-settings
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
