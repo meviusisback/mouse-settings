@@ -23,7 +23,7 @@ Mouse feel lives in Hyprland config files most people never want to hand-edit �
 - **Customizable button remapping** — rebind side buttons and middle click to productivity actions (workspace switching, terminal launch, window management, move/resize, …); Super + drag and Super + wheel gestures configurable too.
 - **Multiplier & natural scrolling** — scroll sensitivity from `0.2x` to `8.0x`, plus natural (touchpad/macOS-style) direction toggle.
 - **Middle-button drag to scroll** — hold the middle button and move the mouse to scroll; applies immediately and persists across logins. While active, the middle button is reserved for drag-scrolling (middle-click paste/close-tab won't fire); Reset Defaults disables it.
-- **Enterprise-grade reliability** — atomic writes (`os.replace` + `fsync`), POSIX concurrency locks (`fcntl.flock`), symlink-attack mitigation, strict parameter allowlists.
+- **Hardened writes** — atomic writes (`os.replace` + `fsync`), an advisory `fcntl.flock` that serialises cooperating writers when it can be taken (if the lock cannot be acquired the write still proceeds), atomic target replacement that never writes through a symlink, strict parameter allowlists.
 - **Live input verification** — interactive test canvas confirms button presses, side keys and scroll direction immediately.
 - **Simulate any button press** — emit real synthetic presses of Left, Right, Middle (274), Side Back (275) or Side Forward (276) from the Buttons tab or the CLI, to test remaps and Hyprland binds without the physical buttons (powered by `ydotool`).
 - **Mouse battery indicator** — remaining percentage of your wireless mouse in the panel header and tooltip (via `upower`); hidden automatically when the mouse reports no battery.
@@ -92,18 +92,25 @@ python3 ~/.config/omarchy/plugins/meviusisback.mouse-settings/mouse_ctl.py simul
 Settings persist inside dedicated marker blocks in `~/.config/hypr/input.lua` and `~/.config/hypr/bindings.lua` (`-- [[ OMARCHY_MOUSE_SETTINGS_START ]]` … `_END`); all rules, comments and manual configuration outside the blocks are preserved:
 
 ```lua
-return {
-  sensitivity = 0.0,
-  accel_profile = "flat",
-  follow_mouse = 1,
-  natural_scroll = false,
-  touchpad = {
+-- [[ OMARCHY_MOUSE_SETTINGS_START ]]
+hl.config({
+  input = {
+    sensitivity = 0.00,
+    accel_profile = "flat",
+    follow_mouse = 1,
     natural_scroll = false,
+    touchpad = {
+      natural_scroll = false,
+    },
+    left_handed = false,
+    scroll_factor = 1.00,
+    scroll_method = "",
+    scroll_button = 0,
+    scroll_button_lock = false,
+    mouse_refocus = true,
   },
-  left_handed = false,
-  scroll_factor = 1.0,
-  mouse_refocus = true,
-}
+})
+-- [[ OMARCHY_MOUSE_SETTINGS_END ]]
 ```
 
 | Key | Meaning |
@@ -121,7 +128,7 @@ Button event reference: `mouse:275` Side Back, `mouse:276` Side Forward, `mouse:
 
 ## How it works
 
-`mouse_ctl.py` is the backend: it applies settings to the live Hyprland session, persists them into the marker blocks with atomic writes (temp file + `fsync` + `os.replace`) under an exclusive file lock (`~/.config/hypr/.mouse_ctl.lock`), and refuses to follow symlinks. Floats are finiteness-checked and clamped, enums matched against allowlists, subprocesses spawned with argument vectors (no shell), and all dynamic strings render via QML `Text.PlainText`. `Panel.qml` is the interface (Motion / Scrolling / Buttons tabs, bar widget, test canvas); `Model.js` holds the label/tooltip formatting helpers.
+`mouse_ctl.py` is the backend: it applies settings to the live Hyprland session, persists them into the marker blocks with atomic writes (temp file + `fsync` + `os.replace`) under an exclusive file lock (`~/.config/hypr/.mouse_ctl.lock`), and never writes through a symlink at the target path. Everything it reads back is finiteness-checked, clamped and matched against allowlists before it is used; subprocesses are spawned with argument vectors (no shell), and all dynamic strings render via QML `Text.PlainText`. `Panel.qml` is the interface (Motion / Scrolling / Buttons tabs, bar widget, test canvas); `Model.js` holds the label/tooltip formatting helpers.
 
 ## Removal
 
