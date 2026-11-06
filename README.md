@@ -22,7 +22,7 @@ Mouse feel lives in Hyprland config files most people never want to hand-edit �
 - **One-click precision mode** — switch instantly between raw 1:1 flat input (gaming, CAD, pixel work) and dynamic acceleration, via the panel cards, a right-click on the top bar icon, or IPC.
 - **Customizable button remapping** — rebind side buttons and middle click to productivity actions (workspace switching, terminal launch, window management, move/resize, …); Super + drag and Super + wheel gestures configurable too.
 - **Multiplier & natural scrolling** — scroll sensitivity from `0.2x` to `8.0x`, plus natural (touchpad/macOS-style) direction toggle.
-- **Middle-button drag to scroll** — hold the middle button and move the mouse to scroll; applies immediately and persists across logins. While active, the middle button is reserved for drag-scrolling (middle-click paste/close-tab won't fire); Reset Defaults disables it.
+- **Middle-button drag to scroll** — hold the middle button and move the mouse to scroll; applies immediately and persists across logins. While active, the middle button is reserved for drag-scrolling (middle-click paste/close-tab won't fire); Reset Defaults disables it. Turning it off reloads Hyprland to restore the device default.
 - **Hardened writes** — atomic writes (`os.replace` + `fsync`), an advisory `fcntl.flock` that serialises cooperating writers when it can be taken (if the lock cannot be acquired the write still proceeds), atomic target replacement that never writes through a symlink, strict parameter allowlists.
 - **Live input verification** — interactive test canvas confirms button presses, side keys and scroll direction immediately.
 - **Simulate any button press** — emit real synthetic presses of Left, Right, Middle (274), Side Back (275) or Side Forward (276) from the Buttons tab or the CLI, to test remaps and Hyprland binds without the physical buttons (powered by `ydotool`).
@@ -104,7 +104,6 @@ hl.config({
     },
     left_handed = false,
     scroll_factor = 1.00,
-    scroll_method = "",
     scroll_button = 0,
     scroll_button_lock = false,
     mouse_refocus = true,
