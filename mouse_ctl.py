@@ -399,6 +399,8 @@ def apply_hypr_eval(settings) -> bool:
     scroll_method = validate_scroll_method(settings.get("scroll_method"))
     scroll_button = validate_int(settings.get("scroll_button"), 0, 0, 65535)
     scroll_button_lock = "true" if validate_bool(settings.get("scroll_button_lock"), False) else "false"
+    # Hyprland rejects an empty scroll_method; leave it out for the device default
+    scroll_method_lua = f'scroll_method = "{scroll_method}", ' if scroll_method else ""
 
     lua_cmd = (
         f"hl.config({{ input = {{ "
@@ -409,7 +411,7 @@ def apply_hypr_eval(settings) -> bool:
         f"touchpad = {{ natural_scroll = {natural_scroll} }}, "
         f"left_handed = {left_handed}, "
         f"scroll_factor = {scroll_factor:.2f}, "
-        f'scroll_method = "{scroll_method}", '
+        f"{scroll_method_lua}"
         f"scroll_button = {scroll_button}, "
         f"scroll_button_lock = {scroll_button_lock}, "
         f"mouse_refocus = {mouse_refocus} "
@@ -443,6 +445,7 @@ def persist_to_input_lua(settings) -> bool:
     scroll_method = validate_scroll_method(settings.get("scroll_method"))
     scroll_button = validate_int(settings.get("scroll_button"), 0, 0, 65535)
     scroll_button_lock = "true" if validate_bool(settings.get("scroll_button_lock"), False) else "false"
+    scroll_method_line = f'    scroll_method = "{scroll_method}",\n' if scroll_method else ""
 
     new_block = (
         f"{START_MARKER}\n"
@@ -457,7 +460,7 @@ def persist_to_input_lua(settings) -> bool:
         f"    }},\n"
         f"    left_handed = {left_handed},\n"
         f"    scroll_factor = {scroll_factor:.2f},\n"
-        f'    scroll_method = "{scroll_method}",\n'
+        f"{scroll_method_line}"
         f"    scroll_button = {scroll_button},\n"
         f"    scroll_button_lock = {scroll_button_lock},\n"
         f"    mouse_refocus = {mouse_refocus},\n"
@@ -661,6 +664,7 @@ def main():
             current = get_current_status()
             has_input_change = False
             has_bindings_change = False
+            needs_reload = False
 
             if args.json_data:
                 try:
@@ -696,6 +700,8 @@ def main():
                             current["scroll_button"] = 274
                             current["scroll_button_lock"] = False
                         else:
+                            # hyprctl eval can't set scroll_method back to empty; reload instead
+                            needs_reload = current["scroll_method"] != ""
                             current["scroll_method"] = ""
                             current["scroll_button"] = 0
                         has_input_change = True
@@ -719,9 +725,11 @@ def main():
                 persist_to_input_lua(current)
 
             if has_bindings_change:
-                bindings_changed = persist_to_bindings_lua(current.get("button_mappings", {}))
-                if bindings_changed:
-                    run_cmd(["hyprctl", "reload"])
+                if persist_to_bindings_lua(current.get("button_mappings", {})):
+                    needs_reload = True
+
+            if needs_reload:
+                run_cmd(["hyprctl", "reload"])
 
             _, err_out, _ = run_cmd(["hyprctl", "configerrors"])
             print(json.dumps({
